@@ -136,7 +136,7 @@ abstract class BaseScannerManager implements ScannerManager {
         webConfigFiles.contains(f.name)
     }
 
-    protected void scanFilesChanged(Collection<String> changedFiles) {
+    void scanFilesChanged(Collection<String> changedFiles) {
 
         for(def f in changedFiles)
             log.debug 'changedFile={}', f

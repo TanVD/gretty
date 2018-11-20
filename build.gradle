@@ -37,6 +37,8 @@ plugins {
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: "org.tenne.rest"
 
+project.version = "2.3.0-SNAPSHOT"
+
 ext {
   project_website = "https://github.com/${developerId}/${projectId}"
   project_scm = "https://github.com/${developerId}/${projectId}.git"

@@ -20,6 +20,7 @@ import org.gradle.process.JavaForkOptions
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.springframework.boot.devtools.autoconfigure.OptionalLiveReloadServer
 import org.springframework.boot.devtools.livereload.LiveReloadServer
+
 /**
  * Base task for starting jetty
  *
@@ -49,11 +50,11 @@ abstract class StartBaseTask extends DefaultTask {
   void action() {
     LauncherConfig config = getLauncherConfig()
     Launcher launcher = new DefaultLauncher(project, config)
-    if(config.serverConfig.liveReloadEnabled) {
+    if (config.serverConfig.liveReloadEnabled) {
       launcher.optionalLiveReloadServer = new OptionalLiveReloadServer(new LiveReloadServer())
     }
     launcher.scannerManager = createScannerManager(config, launcher.optionalLiveReloadServer)
-    if(getIntegrationTest()) {
+    if (getIntegrationTest()) {
       boolean result = false
       try {
         launcher.beforeLaunch()
@@ -64,17 +65,18 @@ abstract class StartBaseTask extends DefaultTask {
         } finally {
           // Need to call afterLaunch in case of unsuccessful launch.
           // If launch was successful, afterLaunch will be called in AppAfterIntegrationTestTask or FarmAfterIntegrationTestTask
-          if(!result)
+          if (!result) {
             launcher.afterLaunch()
+          }
         }
       } finally {
         // Need to dispose of launcher in case of unsuccessful launch.
         // If launch was successful, launcher will be shut down in AppAfterIntegrationTestTask or FarmAfterIntegrationTestTask
-        if(!result)
+        if (!result) {
           launcher.dispose()
+        }
       }
-    }
-    else {
+    } else {
       try {
         launcher.launch()
       } finally {
@@ -87,14 +89,14 @@ abstract class StartBaseTask extends DefaultTask {
   private ScannerManager createScannerManager(LauncherConfig config, OptionalLiveReloadServer optionalLiveReloadServer) {
     switch (config.serverConfig.scanner) {
       case 'jdk':
-        if(JDKScannerManager.available()) {
-          return new JDKScannerManager(project, config.serverConfig, config.webAppConfigs, config.managedClassReload)
+        if (JDKScannerManager.available()) {
+          return new JDKScannerManager(project, config.serverConfig, config.webAppConfigs as List<WebAppConfig>, config.managedClassReload)
         } else {
           logger.error('JDK scanner was specified but it\'s not available. Falling back to jetty scanner')
-          return new JettyScannerManager(project, config.serverConfig, config.webAppConfigs, config.managedClassReload)
+          return new JettyScannerManager(project, config.serverConfig, config.webAppConfigs as List<WebAppConfig>, config.managedClassReload)
         }
       case 'jetty':
-        return new JettyScannerManager(project, config.serverConfig, config.webAppConfigs, config.managedClassReload)
+        return new JettyScannerManager(project, config.serverConfig, config.webAppConfigs as List<WebAppConfig>, config.managedClassReload)
       default:
         throw new IllegalArgumentException("Unknown scanner config: ${config.serverConfig.scanner}")
     }
@@ -104,18 +106,28 @@ abstract class StartBaseTask extends DefaultTask {
 
     CertificateGenerator.maybeGenerate(project, sconfig)
 
-    if(getJacoco()?.enabled) {
+    if (getJacoco()?.enabled) {
       String jacocoConfigJvmArg = getJacoco().getAsJvmArg()
-      if(jacocoConfigJvmArg)
+      if (jacocoConfigJvmArg) {
         sconfig.jvmArgs jacocoConfigJvmArg
+      }
     }
 
-    if(getManagedClassReload(sconfig)) {
-      sconfig.jvmArgs '-javaagent:' + project.configurations.grettySpringLoaded.singleFile.absolutePath, '-noverify'
-      sconfig.systemProperty 'springloaded', 'exclusions=org.akhikhl.gretty..*'
+    if (getManagedClassReload(sconfig)) {
+      switch (sconfig.reloadLib) {
+        case ServerConfig.ClassReloadLib.HotSwapAgent:
+          println("Starting with DCEVM and HotSwap Agent")
+          sconfig.jvmArgs '-XXaltjvm=dcevm', '-javaagent:' + project.configurations.grettyHotswapAgent.singleFile.absolutePath
+          break
+        case ServerConfig.ClassReloadLib.SpringLoaded:
+          println("Starting with SpringLoaded and HotSwap Agent")
+          sconfig.jvmArgs '-javaagent:' + project.configurations.grettySpringLoaded.singleFile.absolutePath, '-noverify'
+          sconfig.systemProperty 'springloaded', 'exclusions=org.akhikhl.gretty..*'
+          break
+      }
     }
 
-    for(Closure c in prepareServerConfigClosures) {
+    for (Closure c in prepareServerConfigClosures) {
       c = c.rehydrate(sconfig, c.owner, c.thisObject)
       c.resolveStrategy = Closure.DELEGATE_FIRST
       c()
@@ -123,7 +135,7 @@ abstract class StartBaseTask extends DefaultTask {
   }
 
   protected final void doPrepareWebAppConfig(WebAppConfig wconfig) {
-    for(Closure c in prepareWebAppConfigClosures) {
+    for (Closure c in prepareWebAppConfigClosures) {
       c = c.rehydrate(wconfig, c.owner, c.thisObject)
       c.resolveStrategy = Closure.DELEGATE_FIRST
       c()
@@ -143,19 +155,19 @@ abstract class StartBaseTask extends DefaultTask {
   }
 
   private void initJacoco() {
-    if(project.extensions.findByName('jacoco') && project.gretty.jacocoEnabled) {
+    if (project.extensions.findByName('jacoco') && project.gretty.jacocoEnabled) {
       Task startTask = this
-      jacocoHelper = (TaskInternal.methods.collectEntries({ [it.name, {} ] }) +
-          JavaForkOptions.methods.collectEntries({ [it.name, {} ] }) +
-          ExtensionAware.methods.collectEntries({ [it.name, {} ] }) + [
-          getExtensions: { startTask.getExtensions() },
-          getInputs: { startTask.getInputs() },
-          getJacoco: { startTask.extensions.jacoco },
-          getName: { startTask.getName() },
-          getOutputs: { startTask.getOutputs() },
-          getProject: { startTask.project },
-          getWorkingDir: { project.projectDir },
-          getJvmArgumentProviders: { [] }
+      jacocoHelper = (TaskInternal.methods.collectEntries({ [it.name, {}] }) +
+              JavaForkOptions.methods.collectEntries({ [it.name, {}] }) +
+              ExtensionAware.methods.collectEntries({ [it.name, {}] }) + [
+              getExtensions: { startTask.getExtensions() },
+              getInputs: { startTask.getInputs() },
+              getJacoco: { startTask.extensions.jacoco },
+              getName: { startTask.getName() },
+              getOutputs: { startTask.getOutputs() },
+              getProject: { startTask.project },
+              getWorkingDir: { project.projectDir },
+              getJvmArgumentProviders: { [] }
       ]) as JacocoHelper
       project.jacoco.applyTo(jacocoHelper)
       jacocoHelper.jacoco.enabled = getDefaultJacocoEnabled()
@@ -209,7 +221,7 @@ abstract class StartBaseTask extends DefaultTask {
         new WebAppClassPathResolver() {
           Collection<URL> resolveWebAppClassPath(WebAppConfig wconfig) {
             Set<URL> resolvedClassPath = new LinkedHashSet<URL>()
-            if(wconfig.projectPath) {
+            if (wconfig.projectPath) {
               def proj = self.project.project(wconfig.projectPath)
               String runtimeConfig = ProjectUtils.isSpringBootApp(proj) ? 'springBoot' : 'runtimeClasspath'
               resolvedClassPath.addAll(ProjectUtils.resolveClassPath(proj, wconfig.beforeClassPath))
@@ -220,10 +232,11 @@ abstract class StartBaseTask extends DefaultTask {
                 if (classpath) {
                   for (String elem in classpath) {
                     URL url
-                    if (elem =~ /.{2,}\:.+/)
+                    if (elem =~ /.{2,}\:.+/) {
                       url = new URL(elem)
-                    else
+                    } else {
                       url = new File(elem).toURI().toURL()
+                    }
                     resolvedClassPath.add(url)
                   }
                 }
@@ -256,11 +269,11 @@ abstract class StartBaseTask extends DefaultTask {
    * key is context path, value is collection of classpath URLs
    * @return
    */
-  Map<String, Collection<URL> > getWebappClassPaths() {
+  Map<String, Collection<URL>> getWebappClassPaths() {
     LauncherConfig config = getLauncherConfig()
     WebAppClassPathResolver resolver = config.getWebAppClassPathResolver()
     config.getWebAppConfigs().collectEntries { wconfig ->
-      [ wconfig.contextPath, resolver.resolveWebAppClassPath(wconfig) ]
+      [wconfig.contextPath, resolver.resolveWebAppClassPath(wconfig)]
     }
   }
 

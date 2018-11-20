@@ -50,6 +50,9 @@ class GrettyPlugin implements Plugin<Project> {
       grettySpringLoaded {
         transitive = false
       }
+      grettyHotswapAgent {
+        transitive = false
+      }
       grettyProductRuntime
       grettyProvidedCompile
       project.configurations.findByName('implementation')?.extendsFrom grettyProvidedCompile
@@ -89,6 +92,7 @@ class GrettyPlugin implements Plugin<Project> {
     project.dependencies {
       grettyStarter "org.gretty:gretty-starter:$grettyVersion"
       grettySpringLoaded "org.springframework:springloaded:$springLoadedVersion"
+      grettyHotswapAgent "org.hotswapagent:hotswap-agent:1.3.0"
     }
 
     ServletContainerConfig.getConfig(project.gretty.servletContainer).with { config ->

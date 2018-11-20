@@ -26,7 +26,14 @@ class ServerConfig {
   List<String> jvmArgs
   Map<String, String> systemProperties
   String servletContainer
+
   Boolean managedClassReload
+  ClassReloadLib reloadLib = ClassReloadLib.HotSwapAgent
+  enum ClassReloadLib {
+    HotSwapAgent,
+    SpringLoaded
+  }
+
   String host
   Boolean httpEnabled
   Integer httpPort
