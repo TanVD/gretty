@@ -86,13 +86,14 @@ class GrettyPlugin implements Plugin<Project> {
     String grettyVersion = Externalized.getString('grettyVersion')
     String springBootVersion = project.gretty.springBootVersion ?: (project.hasProperty('springBootVersion') ? project.springBootVersion : Externalized.getString('springBootVersion'))
     String springLoadedVersion = project.gretty.springLoadedVersion ?: (project.hasProperty('springLoadedVersion') ? project.springLoadedVersion : Externalized.getString('springLoadedVersion'))
+    String hotswapAgentVersion = project.gretty.hotswapAgentVersion ?: (project.hasProperty('hotswapAgentVersion') ? project.hotswapAgentVersion : Externalized.getString('hotswapAgentVersion'))
     String springVersion = project.gretty.springVersion ?: (project.hasProperty('springVersion') ? project.springVersion : Externalized.getString('springVersion'))
     String logbackVersion = project.gretty.logbackVersion ?: (project.hasProperty('logbackVersion') ? project.logbackVersion :Externalized.getString('logbackVersion'))
 
     project.dependencies {
       grettyStarter "org.gretty:gretty-starter:$grettyVersion"
       grettySpringLoaded "org.springframework:springloaded:$springLoadedVersion"
-      grettyHotswapAgent "org.hotswapagent:hotswap-agent:1.3.0"
+      grettyHotswapAgent "org.hotswapagent:hotswap-agent:$hotswapAgentVersion"
     }
 
     ServletContainerConfig.getConfig(project.gretty.servletContainer).with { config ->

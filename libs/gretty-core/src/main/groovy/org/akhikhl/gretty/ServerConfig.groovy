@@ -79,6 +79,7 @@ class ServerConfig {
   Boolean secureRandom
   String springBootVersion
   String springLoadedVersion
+  String hotswapAgentVersion
   String springVersion
   String logbackVersion
   Boolean singleSignOn

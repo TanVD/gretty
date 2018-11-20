@@ -155,7 +155,7 @@ abstract class BaseScannerManager implements ScannerManager {
         for(String f in changedFiles) {
             if(f.endsWith('.jar')) {
                 List<WebAppConfig> dependantWebAppProjects = webapps.findAll {
-                    it.projectPath && project.project(it.projectPath).configurations.implementation.resolvedConfiguration.resolvedArtifacts.find {
+                    it.projectPath && project.project(it.projectPath).configurations.compile.resolvedConfiguration.resolvedArtifacts.find {
                         it.file.absolutePath == f }
                 }
                 if(dependantWebAppProjects) {
@@ -257,9 +257,11 @@ abstract class BaseScannerManager implements ScannerManager {
                 ServiceProtocol.send(servicePort, 'restartWithEvent')
                 onRestart?.call()
             } else if(sconfig.redeployMode == 'redeploy') {
-                onBeforeReload?.call()
-                ServiceProtocol.send(servicePort, "redeploy ${webAppConfigsToRestart.collect {it.contextPath}.toSet().join(' ')}")
-                onReload?.call()
+              onBeforeReload?.call()
+              ServiceProtocol.send(servicePort, "redeploy ${webAppConfigsToRestart.collect { it.contextPath }.toSet().join(' ')}")
+              onReload?.call()
+            } else if (sconfig.redeployMode == 'ignore') {
+              log.info("Application should be restarted, but redeploy mode is ignore. So redeploy ignored.")
             } else {
                 throw new IllegalStateException("Unknown redeployMode: ${sconfig.redeployMode}")
             }
