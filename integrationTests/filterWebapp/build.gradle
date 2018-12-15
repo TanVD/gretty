@@ -6,22 +6,22 @@ apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-  compile 'org.webjars:bootstrap:3.2.0'
-  compile 'org.webjars:jquery:2.1.1'
-  // We use Velocity for example of template processing within the webapp.
-  compile 'org.apache.velocity:velocity:1.7'
+    compile 'org.webjars:bootstrap:3.2.0'
+    compile 'org.webjars:jquery:2.1.1'
+    // We use Velocity for example of template processing within the webapp.
+    compile 'org.apache.velocity:velocity:1.7'
 }
 
 gretty {
-  webappCopy {
-    // Enable filtering on all xml files in WEB-INF
-    filesMatching 'WEB-INF/*.xml', { FileCopyDetails fileDetails ->
-      logger.warn 'File filtered: {}', fileDetails.path
-      filter ReplaceTokens, tokens: [
-              'paramValue': 'test123'
-      ]
+    webappCopy {
+        // Enable filtering on all xml files in WEB-INF
+        filesMatching 'WEB-INF/*.xml', { FileCopyDetails fileDetails ->
+            logger.warn 'File filtered: {}', fileDetails.path
+            filter ReplaceTokens, tokens: [
+                    'paramValue': 'test123'
+            ]
+        }
     }
-  }
 }
 
 defineIntegrationTest()

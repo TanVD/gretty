@@ -27,72 +27,72 @@ import javax.servlet.ServletContext
  */
 class SkipPatternJarScanner extends StandardJarScanner {
 
-  private static final Logger log = LoggerFactory.getLogger(SkipPatternJarScanner)
+    private static final Logger log = LoggerFactory.getLogger(SkipPatternJarScanner)
 
-  protected final JarScanner jarScanner
-  protected final JarSkipPatterns skipPatterns
+    protected final JarScanner jarScanner
+    protected final JarSkipPatterns skipPatterns
 
-  SkipPatternJarScanner(JarScanner jarScanner, JarSkipPatterns skipPatterns) {
-    assert jarScanner != null
-    this.jarScanner = jarScanner
-    this.skipPatterns = skipPatterns
-    setJarScanFilter(new StandardJarScanFilter())
-  }
-
-  protected JarScannerCallback augmentCallback(final JarScannerCallback callback) {
-
-    if (!log.isDebugEnabled()) {
-      return callback
+    SkipPatternJarScanner(JarScanner jarScanner, JarSkipPatterns skipPatterns) {
+        assert jarScanner != null
+        this.jarScanner = jarScanner
+        this.skipPatterns = skipPatterns
+        setJarScanFilter(new StandardJarScanFilter())
     }
 
-    return new JarScannerCallback() {
+    protected JarScannerCallback augmentCallback(final JarScannerCallback callback) {
 
-      void scan(Jar jar, String webappPath, boolean isWebapp) throws IOException {
-        log.debug('jarScannerCallback.scan {}, {}, {}', jar, webappPath, isWebapp)
-        callback.scan(jar, webappPath, isWebapp)
-      }
+        if (!log.isDebugEnabled()) {
+            return callback
+        }
 
-      void scan(File file, String webappPath, boolean isWebapp) throws IOException {
-        log.debug('jarScannerCallback.scan {}, {}, {}', file, webappPath, isWebapp)
-        callback.scan(file, webappPath, isWebapp)
-      }
+        return new JarScannerCallback() {
 
-      void scanWebInfClasses() throws IOException {
-        log.debug('jarScannerCallback.scanWebInfClasses')
-        callback.scanWebInfClasses()
-      }
+            void scan(Jar jar, String webappPath, boolean isWebapp) throws IOException {
+                log.debug('jarScannerCallback.scan {}, {}, {}', jar, webappPath, isWebapp)
+                callback.scan(jar, webappPath, isWebapp)
+            }
+
+            void scan(File file, String webappPath, boolean isWebapp) throws IOException {
+                log.debug('jarScannerCallback.scan {}, {}, {}', file, webappPath, isWebapp)
+                callback.scan(file, webappPath, isWebapp)
+            }
+
+            void scanWebInfClasses() throws IOException {
+                log.debug('jarScannerCallback.scanWebInfClasses')
+                callback.scanWebInfClasses()
+            }
+        }
     }
-  }
 
-  protected boolean checkJar(String path) {
-    String name = path.substring(path.lastIndexOf('/') + 1)
-    boolean result = !Matcher.matchName(skipPatterns.asSet(), name)
-    log.debug 'filter jar: {} -> {}', name, result
-    result
-  }
-
-  @Override
-  public void setJarScanFilter(JarScanFilter newFilter) {
-    super.setJarScanFilter(newFilter)
-    jarScanner.setJarScanFilter(new TomcatJarScanFilter(newFilter))
-  }
-
-  @Override
-  public void scan(JarScanType scanType, ServletContext context, JarScannerCallback callback) {
-    jarScanner.scan(scanType, context, augmentCallback(callback))
-  }
-
-  private class TomcatJarScanFilter implements JarScanFilter {
-
-    private final JarScanFilter additionalScanFilter
-
-    TomcatJarScanFilter(JarScanFilter additionalScanFilter) {
-      this.additionalScanFilter = additionalScanFilter
+    protected boolean checkJar(String path) {
+        String name = path.substring(path.lastIndexOf('/') + 1)
+        boolean result = !Matcher.matchName(skipPatterns.asSet(), name)
+        log.debug 'filter jar: {} -> {}', name, result
+        result
     }
 
     @Override
-    boolean check(JarScanType jarScanType, String jarName) {
-      checkJar(jarName) && (additionalScanFilter == null || additionalScanFilter.check(jarScanType, jarName))
+    public void setJarScanFilter(JarScanFilter newFilter) {
+        super.setJarScanFilter(newFilter)
+        jarScanner.setJarScanFilter(new TomcatJarScanFilter(newFilter))
     }
-  }
+
+    @Override
+    public void scan(JarScanType scanType, ServletContext context, JarScannerCallback callback) {
+        jarScanner.scan(scanType, context, augmentCallback(callback))
+    }
+
+    private class TomcatJarScanFilter implements JarScanFilter {
+
+        private final JarScanFilter additionalScanFilter
+
+        TomcatJarScanFilter(JarScanFilter additionalScanFilter) {
+            this.additionalScanFilter = additionalScanFilter
+        }
+
+        @Override
+        boolean check(JarScanType jarScanType, String jarName) {
+            checkJar(jarName) && (additionalScanFilter == null || additionalScanFilter.check(jarScanType, jarName))
+        }
+    }
 }

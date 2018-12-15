@@ -15,18 +15,18 @@ import static groovyx.net.http.Method.*
 
 class WebServiceSpec extends GrettyAjaxSpec {
 
-  def 'should handle requests'() {
-    when:
-    def result = conn.request(POST, JSON) {
-      uri.path = "${contextPath}/getdate"
-      response.success = { resp, json ->
-        json.date
-      }
-      response.failure = { resp ->
-        resp.statusLine.statusCode
-      }
+    def 'should handle requests'() {
+        when:
+        def result = conn.request(POST, JSON) {
+            uri.path = "${contextPath}/getdate"
+            response.success = { resp, json ->
+                json.date
+            }
+            response.failure = { resp ->
+                resp.statusLine.statusCode
+            }
+        }
+        then:
+        result == new Date().format('EEE, d MMM yyyy')
     }
-    then:
-    result == new Date().format('EEE, d MMM yyyy')
-  }
 }

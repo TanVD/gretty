@@ -14,6 +14,6 @@ package org.akhikhl.gretty
  */
 interface ServerStartEvent {
 
-  void onServerStart(Map serverStartInfo)
+    void onServerStart(Map serverStartInfo)
 }
 

@@ -14,26 +14,24 @@ package org.akhikhl.gretty
  */
 interface LauncherConfig {
 
-  boolean getDebug()
+    boolean getDebug()
 
-  int getDebugPort()
+    int getDebugPort()
 
-  boolean getDebugSuspend()
+    boolean getDebugSuspend()
 
-  boolean getInteractive()
+    boolean getInteractive()
 
-  boolean getManagedClassReload()
+    boolean getManagedClassReload()
 
-  ServerConfig getServerConfig()
+    ServerConfig getServerConfig()
 
-  String getStopCommand()
+    String getStopCommand()
 
-  File getBaseDir()
+    File getBaseDir()
 
-  boolean getProductMode()
+    WebAppClassPathResolver getWebAppClassPathResolver()
 
-  WebAppClassPathResolver getWebAppClassPathResolver()
-
-  Iterable<WebAppConfig> getWebAppConfigs()
+    Iterable<WebAppConfig> getWebAppConfigs()
 }
 

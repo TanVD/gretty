@@ -7,31 +7,31 @@ String logFileName = "$logFileName"
 def appenders = []
 
 < % if (consoleLogEnabled) {
-  % >
-  appender('CONSOLE', ConsoleAppender) {
-    encoder(PatternLayoutEncoder) {
-      pattern = encoderPattern
+    % >
+    appender('CONSOLE', ConsoleAppender) {
+        encoder(PatternLayoutEncoder) {
+            pattern = encoderPattern
+        }
     }
-  }
-  appenders.add('CONSOLE')
-  < %
+    appenders.add('CONSOLE')
+    < %
 } % >
 
 < % if (fileLogEnabled) {
-  % >
-  appender('FILE', RollingFileAppender) {
-    file = "\${logDir}/\${logFileName}.log"
-    append = true
-    rollingPolicy(TimeBasedRollingPolicy) {
-      fileNamePattern = "\${logDir}/\${logFileName}-%d{yyyy-MM-dd_HH}.log"
-      maxHistory = 7
+    % >
+    appender('FILE', RollingFileAppender) {
+        file = "\${logDir}/\${logFileName}.logger"
+        append = true
+        rollingPolicy(TimeBasedRollingPolicy) {
+            fileNamePattern = "\${logDir}/\${logFileName}-%d{yyyy-MM-dd_HH}.logger"
+            maxHistory = 7
+        }
+        encoder(PatternLayoutEncoder) {
+            pattern = encoderPattern
+        }
     }
-    encoder(PatternLayoutEncoder) {
-      pattern = encoderPattern
-    }
-  }
-  appenders.add('FILE')
-  < %
+    appenders.add('FILE')
+    < %
 } % >
 
 root $loggingLevel, appenders

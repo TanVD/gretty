@@ -18,37 +18,37 @@ import org.eclipse.jetty.webapp.WebInfConfiguration
 @CompileStatic(TypeCheckingMode.SKIP)
 class WebInfConfigurationEx extends WebInfConfiguration implements BaseResourceConfiguration {
 
-  private List extraResourceBases
-  private final List baseResourceListeners = []
+    private List extraResourceBases
+    private final List baseResourceListeners = []
 
-  @Override
-  void addBaseResourceListener(Closure closure) {
-    baseResourceListeners.add(closure)
-  }
-
-  @Override
-  void setExtraResourceBases(List extraResourceBases) {
-    this.extraResourceBases = extraResourceBases
-  }
-
-  @Override
-  public void unpack(WebAppContext context) throws IOException {
-    super.unpack(context)
-    if (extraResourceBases) {
-      Resource res = context.getBaseResource()
-      List resources = []
-      if (res instanceof ResourceCollection) {
-        resources.addAll(res.getResources())
-      } else {
-        resources.add(res)
-      }
-      for (def e in extraResourceBases) {
-        resources.add(Resource.newResource(e))
-      }
-      context.setBaseResource(new ResourceCollection(resources as Resource[]))
+    @Override
+    void addBaseResourceListener(Closure closure) {
+        baseResourceListeners.add(closure)
     }
-    for (Closure closure in baseResourceListeners) {
-      closure(context)
+
+    @Override
+    void setExtraResourceBases(List extraResourceBases) {
+        this.extraResourceBases = extraResourceBases
     }
-  }
+
+    @Override
+    public void unpack(WebAppContext context) throws IOException {
+        super.unpack(context)
+        if (extraResourceBases) {
+            Resource res = context.getBaseResource()
+            List resources = []
+            if (res instanceof ResourceCollection) {
+                resources.addAll(res.getResources())
+            } else {
+                resources.add(res)
+            }
+            for (def e in extraResourceBases) {
+                resources.add(Resource.newResource(e))
+            }
+            context.setBaseResource(new ResourceCollection(resources as Resource[]))
+        }
+        for (Closure closure in baseResourceListeners) {
+            closure(context)
+        }
+    }
 }

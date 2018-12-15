@@ -10,8 +10,8 @@ package org.akhikhl.gretty
 
 interface BaseResourceConfiguration {
 
-  void addBaseResourceListener(Closure closure)
+    void addBaseResourceListener(Closure closure)
 
-  void setExtraResourceBases(List extraResourceBases)
+    void setExtraResourceBases(List extraResourceBases)
 }
 

@@ -1,39 +1,39 @@
 buildscript {
-  project.ext {
-    if (has('privateRepoDir')) {
-      privateRepoDir = privateRepoDir instanceof File ? privateRepoDir.path : privateRepoDir.toString()
-      if (!new File(privateRepoDir).isAbsolute()) {
-        privateRepoDir = new File(projectDir, privateRepoDir).canonicalPath
-      }
-    } else {
-      privateRepoDir = new File(project.buildDir, 'privateRepo').canonicalPath
+    project.ext {
+        if (has('privateRepoDir')) {
+            privateRepoDir = privateRepoDir instanceof File ? privateRepoDir.path : privateRepoDir.toString()
+            if (!new File(privateRepoDir).isAbsolute()) {
+                privateRepoDir = new File(projectDir, privateRepoDir).canonicalPath
+            }
+        } else {
+            privateRepoDir = new File(project.buildDir, 'privateRepo').canonicalPath
+        }
     }
-  }
 
-  repositories {
-    maven {
-      url "file:$privateRepoDir"
+    repositories {
+        maven {
+            url "file:$privateRepoDir"
+        }
+        jcenter()
+        maven {
+            url 'https://dl.bintray.com/content/noamt/gradle-plugins'
+        }
     }
-    jcenter()
-    maven {
-      url 'https://dl.bintray.com/content/noamt/gradle-plugins'
-    }
-  }
 
-  dependencies {
-    classpath 'org.apache.commons:commons-lang3:3.4'
-    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.1'
-    classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.7.3'
-    classpath "org._10ne.gradle:rest-gradle-plugin:0.4.2"
-    classpath 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
-  }
+    dependencies {
+        classpath 'org.apache.commons:commons-lang3:3.4'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.1'
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.7.3'
+        classpath "org._10ne.gradle:rest-gradle-plugin:0.4.2"
+        classpath 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    }
 }
 
 import groovyx.net.http.ContentType
 
 plugins {
-  id 'base'
-  id 'maven-publish'
+    id 'base'
+    id 'maven-publish'
 }
 
 apply plugin: 'com.jfrog.artifactory'
@@ -42,127 +42,127 @@ apply plugin: "org.tenne.rest"
 project.version = "2.3.0-SNAPSHOT"
 
 ext {
-  project_website = "https://github.com/${developerId}/${projectId}"
-  project_scm = "https://github.com/${developerId}/${projectId}.git"
-  license_url = "https://raw.github.com/${developerId}/${projectId}/master/LICENSE"
+    project_website = "https://github.com/${developerId}/${projectId}"
+    project_scm = "https://github.com/${developerId}/${projectId}.git"
+    license_url = "https://raw.github.com/${developerId}/${projectId}/master/LICENSE"
 
-  if (!has('bintrayUser')) {
-    bintrayUser = ''
-  }
+    if (!has('bintrayUser')) {
+        bintrayUser = ''
+    }
 
-  if (!has('bintrayKey')) {
-    bintrayKey = ''
-  }
+    if (!has('bintrayKey')) {
+        bintrayKey = ''
+    }
 
-  if (!has('bintrayRepo')) {
-    bintrayRepo = ''
-  }
+    if (!has('bintrayRepo')) {
+        bintrayRepo = ''
+    }
 
-  if (!has('bintrayPackage')) {
-    bintrayPackage = ''
-  }
+    if (!has('bintrayPackage')) {
+        bintrayPackage = ''
+    }
 
-  bintrayGpgRequestBody = [:]
+    bintrayGpgRequestBody = [:]
 
-  if (!has('bintraySubject')) {
-    bintraySubject = ''
-  } else {
-    bintrayGpgRequestBody.put('subject', bintraySubject)
-  }
+    if (!has('bintraySubject')) {
+        bintraySubject = ''
+    } else {
+        bintrayGpgRequestBody.put('subject', bintraySubject)
+    }
 
-  if (!has('gpgPassphrase')) {
-    gpgPassphrase = ''
-  } else {
-    bintrayGpgRequestBody.put('passphrase', gpgPassphrase)
-  }
+    if (!has('gpgPassphrase')) {
+        gpgPassphrase = ''
+    } else {
+        bintrayGpgRequestBody.put('passphrase', gpgPassphrase)
+    }
 
-  if (!has('gpgKey')) {
-    gpgKey = ''
-  } else {
-    bintrayGpgRequestBody.put('private_key', gpgKey)
-  }
+    if (!has('gpgKey')) {
+        gpgKey = ''
+    } else {
+        bintrayGpgRequestBody.put('private_key', gpgKey)
+    }
 
-  if (!has('bintrayDryRun')) {
-    bintrayDryRun = false
-  }
+    if (!has('bintrayDryRun')) {
+        bintrayDryRun = false
+    }
 
-  if (!has('artifactory_contextUrl')) {
-    artifactory_contextUrl = 'https://oss.jfrog.org/artifactory'
-  }
+    if (!has('artifactory_contextUrl')) {
+        artifactory_contextUrl = 'https://oss.jfrog.org/artifactory'
+    }
 }
 
 if (!bintrayDryRun) {
-  task bintraySign(type: org._10ne.gradle.rest.RestTask) {
-    description 'Push to bintray and sign it.'
-    httpMethod = 'post'
-    uri = "https://api.bintray.com/gpg/${project.bintrayUser}/${project.bintrayRepo}/${project.bintrayPackage}/versions/${project.version}"
-    username = project.bintrayUser
-    password = project.bintrayKey
-    requestBody = project.bintrayGpgRequestBody
-    contentType = ContentType.JSON
-  }
+    task bintraySign(type: org._10ne.gradle.rest.RestTask) {
+        description 'Push to bintray and sign it.'
+        httpMethod = 'post'
+        uri = "https://api.bintray.com/gpg/${project.bintrayUser}/${project.bintrayRepo}/${project.bintrayPackage}/versions/${project.version}"
+        username = project.bintrayUser
+        password = project.bintrayKey
+        requestBody = project.bintrayGpgRequestBody
+        contentType = ContentType.JSON
+    }
 }
 
 task buildIntegrationTests(type: GradleBuild) {
-  dir = file('integrationTests')
-  tasks = ['build']
-  project.tasks.build.finalizedBy it
-  onlyIf { !project.tasks.build.getState().getFailure() }
+    dir = file('integrationTests')
+    tasks = ['build']
+    project.tasks.build.finalizedBy it
+    onlyIf { !project.tasks.build.getState().getFailure() }
 }
 
 task testAll(dependsOn: tasks.build)
 
 task testAllIntegrationTests(type: GradleBuild) {
-  dependsOn buildIntegrationTests
-  dir = file('integrationTests')
-  tasks = ['testAll']
-  startParameter.projectProperties = [:]
-  if (project.hasProperty('geckoDriverPlatform')) {
-    startParameter.projectProperties.put('geckoDriverPlatform', project.geckoDriverPlatform)
-  }
-  if (project.hasProperty('geckoDriverVersion')) {
-    startParameter.projectProperties.put('geckoDriverVersion', project.geckoDriverVersion)
-  }
-  if (project.hasProperty('seleniumVersion')) {
-    startParameter.projectProperties.put('seleniumVersion', project.seleniumVersion)
-  }
-  if (project.hasProperty('gebVersion')) {
-    startParameter.projectProperties.put('gebVersion', project.gebVersion)
-  }
-  if (project.hasProperty('testAllContainers')) {
-    startParameter.projectProperties.put('testAllContainers', project.testAllContainers)
-  }
-  project.tasks.testAll.finalizedBy it
-  onlyIf { !project.tasks.testAll.getState().getFailure() }
+    dependsOn buildIntegrationTests
+    dir = file('integrationTests')
+    tasks = ['testAll']
+    startParameter.projectProperties = [:]
+    if (project.hasProperty('geckoDriverPlatform')) {
+        startParameter.projectProperties.put('geckoDriverPlatform', project.geckoDriverPlatform)
+    }
+    if (project.hasProperty('geckoDriverVersion')) {
+        startParameter.projectProperties.put('geckoDriverVersion', project.geckoDriverVersion)
+    }
+    if (project.hasProperty('seleniumVersion')) {
+        startParameter.projectProperties.put('seleniumVersion', project.seleniumVersion)
+    }
+    if (project.hasProperty('gebVersion')) {
+        startParameter.projectProperties.put('gebVersion', project.gebVersion)
+    }
+    if (project.hasProperty('testAllContainers')) {
+        startParameter.projectProperties.put('testAllContainers', project.testAllContainers)
+    }
+    project.tasks.testAll.finalizedBy it
+    onlyIf { !project.tasks.testAll.getState().getFailure() }
 }
 
 task cleanIntegrationTests(type: GradleBuild) {
-  dir = file('integrationTests')
-  tasks = ['clean']
-  project.tasks.clean.dependsOn it
+    dir = file('integrationTests')
+    tasks = ['clean']
+    project.tasks.clean.dependsOn it
 }
 
 wrapper {
-  gradleVersion = '4.8'
-  distributionType = Wrapper.DistributionType.ALL
+    gradleVersion = '4.8'
+    distributionType = Wrapper.DistributionType.ALL
 }
 
 artifactory {
-  contextUrl = artifactory_contextUrl
-  publish {
-    repository {
-      if (project.version.endsWith('-SNAPSHOT')) {
-        repoKey = 'oss-snapshot-local'
-      } else {
-        repoKey = 'oss-release-local'
-      }
-      username = project.bintrayUser
-      password = project.bintrayKey
+    contextUrl = artifactory_contextUrl
+    publish {
+        repository {
+            if (project.version.endsWith('-SNAPSHOT')) {
+                repoKey = 'oss-snapshot-local'
+            } else {
+                repoKey = 'oss-release-local'
+            }
+            username = project.bintrayUser
+            password = project.bintrayKey
+        }
     }
-  }
-  resolve {
-    repository {
-      repoKey = 'repo'
+    resolve {
+        repository {
+            repoKey = 'repo'
+        }
     }
-  }
 }

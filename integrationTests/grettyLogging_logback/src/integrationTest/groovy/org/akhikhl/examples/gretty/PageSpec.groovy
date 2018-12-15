@@ -12,16 +12,16 @@ import geb.spock.GebReportingSpec
 
 class PageSpec extends GebReportingSpec {
 
-  private static String baseURI
+    private static String baseURI
 
-  void setupSpec() {
-    baseURI = System.getProperty('gretty.baseURI')
-  }
+    void setupSpec() {
+        baseURI = System.getProperty('gretty.baseURI')
+    }
 
-  def 'should get expected static page'() {
-    when:
-    go "${baseURI}"
-    then:
-    $('body').text() == 'Hello, world!'
-  }
+    def 'should get expected static page'() {
+        when:
+        go "${baseURI}"
+        then:
+        $('body').text() == 'Hello, world!'
+    }
 }

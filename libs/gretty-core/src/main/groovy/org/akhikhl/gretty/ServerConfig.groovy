@@ -20,191 +20,131 @@ import groovy.transform.TypeCheckingMode
 @ToString
 class ServerConfig {
 
-  // attention: this constant must always have the same value as PortUtils.RANDOM_FREE_PORT
-  static final int RANDOM_FREE_PORT = -1
+    // attention: this constant must always have the same value as PortUtils.RANDOM_FREE_PORT
+    static final int RANDOM_FREE_PORT = -1
 
-  List<String> jvmArgs
-  Map<String, String> systemProperties
-  String servletContainer
+    List<String> jvmArgs
+    Map<String, String> systemProperties
+    String servletContainer
 
-  Boolean managedClassReload
-  ClassReloadLib reloadLib = ClassReloadLib.HotSwapAgent
-  enum ClassReloadLib {
-    HotSwapAgent,
-    SpringLoaded
-  }
+    Boolean managedClassReload
 
-  String host
-  Boolean httpEnabled
-  Integer httpPort
-  Integer httpIdleTimeout
-  Boolean httpsEnabled
-  Integer httpsPort
-  Integer httpsIdleTimeout
-  String sslHost
-  def sslKeyStorePath
-  String sslKeyStorePassword
-  String sslKeyManagerPassword
-  def sslTrustStorePath
-  String sslTrustStorePassword
-  boolean sslNeedClientAuth
-  def realm
-  def realmConfigFile
-  def serverConfigFile
-  String interactiveMode
-  Integer scanInterval
-  def logbackConfigFile
-  String loggingLevel
-  Boolean consoleLogEnabled
-  Boolean fileLogEnabled
-  def logFileName
-  def logDir
-  List<Closure> onStart
-  List<Closure> onStop
-  List<Closure> onScan
-  List<Closure> onScanFilesChanged
+    String host
+    Boolean httpEnabled
+    Integer httpPort
+    Integer httpIdleTimeout
+    Boolean httpsEnabled
+    Integer httpsPort
+    Integer httpsIdleTimeout
+    def sslKeyStorePath
+    String sslKeyStorePassword
+    String sslKeyManagerPassword
+    def sslTrustStorePath
+    String sslTrustStorePassword
+    boolean sslNeedClientAuth
+    def realm
+    def realmConfigFile
+    def serverConfigFile
+    String interactiveMode
+    def logbackConfigFile
+    String loggingLevel
+    Boolean consoleLogEnabled
+    Boolean fileLogEnabled
+    def logFileName
+    def logDir
+    List<Closure> onStart
+    List<Closure> onStop
 
-  /**
-   * Please don't use servicePort, it will be removed in Gretty 2.0
-   */
-  @Deprecated
-  Integer servicePort
+    Boolean secureRandom
+    String logbackVersion
+    Boolean singleSignOn
+    /**
+     * Tomcat-specific: Enables JNDI naming which is disabled by default.
+     */
+    Boolean enableNaming
 
-  /**
-   * Please don't use statusPort, it will be removed in Gretty 2.0
-   */
-  @Deprecated
-  Integer statusPort
+    List<Integer> auxPortRange
 
-  Boolean secureRandom
-  String springBootVersion
-  String springLoadedVersion
-  String hotswapAgentVersion
-  String springVersion
-  String logbackVersion
-  Boolean singleSignOn
-  /**
-   * Tomcat-specific: Enables JNDI naming which is disabled by default.
-   */
-  Boolean enableNaming
+    String portPropertiesFileName
 
-  String redeployMode
-  String scanner
-
-  List<Integer> auxPortRange
-
-  String portPropertiesFileName
-
-  Boolean liveReloadEnabled
-
-  static ServerConfig getDefaultServerConfig(String serverName) {
-    ServerConfig result = new ServerConfig()
-    result.jvmArgs = []
-    result.servletContainer = 'jetty9.4'
-    result.managedClassReload = false
-    result.httpEnabled = true
-    result.httpsEnabled = false
-    result.interactiveMode = 'stopOnKeyPress'
-    result.scanInterval = 1
-    result.loggingLevel = 'INFO'
-    result.consoleLogEnabled = true
-    result.fileLogEnabled = true
-    result.logFileName = serverName
-    result.redeployMode = 'restart'
-    result.logDir = "${System.getProperty('user.home')}/logs" as String
-    result.scanner = 'jetty'
-    result.portPropertiesFileName = 'gretty_ports.properties'
-    result.liveReloadEnabled = false
-    return result
-  }
-
-  // use serverConfigFile instead
-  @Deprecated
-  def getJettyXmlFile() {
-    serverConfigFile
-  }
-
-  // use httpPort instead
-  @Deprecated
-  Integer getPort() {
-    httpPort
-  }
-
-  int getRandomFreePort() {
-    RANDOM_FREE_PORT
-  }
-
-  void jvmArg(Object a) {
-    if (a) {
-      if (jvmArgs == null) {
-        jvmArgs = []
-      }
-      jvmArgs.add(a)
+    static ServerConfig getDefaultServerConfig(String serverName) {
+        ServerConfig result = new ServerConfig()
+        result.jvmArgs = []
+        result.servletContainer = 'jetty9.4'
+        result.managedClassReload = false
+        result.httpEnabled = true
+        result.httpsEnabled = false
+        result.interactiveMode = 'stopOnKeyPress'
+        result.loggingLevel = 'INFO'
+        result.consoleLogEnabled = true
+        result.fileLogEnabled = true
+        result.logFileName = serverName
+        result.logDir = "${System.getProperty('user.home')}/logs" as String
+        result.portPropertiesFileName = 'gretty_ports.properties'
+        return result
     }
-  }
 
-  void jvmArgs(Object... args) {
-    if (args) {
-      if (jvmArgs == null) {
-        jvmArgs = []
-      }
-      jvmArgs.addAll(args)
+    // use serverConfigFile instead
+    @Deprecated
+    def getJettyXmlFile() {
+        serverConfigFile
     }
-  }
 
-  void onScan(Closure newValue) {
-    if (onScan == null) {
-      onScan = []
+    // use httpPort instead
+    @Deprecated
+    Integer getPort() {
+        httpPort
     }
-    onScan.add newValue
-  }
 
-  void onScanFilesChanged(Closure newValue) {
-    if (onScanFilesChanged == null) {
-      onScanFilesChanged = []
+    int getRandomFreePort() {
+        RANDOM_FREE_PORT
     }
-    onScanFilesChanged.add newValue
-  }
 
-  void onStart(Closure newValue) {
-    if (onStart == null) {
-      onStart = []
+    void jvmArg(Object a) {
+        if (a) {
+            if (jvmArgs == null) {
+                jvmArgs = []
+            }
+            jvmArgs.add(a)
+        }
     }
-    onStart.add newValue
-  }
 
-  void onStop(Closure newValue) {
-    if (onStop == null) {
-      onStop = []
+    void jvmArgs(Object... args) {
+        if (args) {
+            if (jvmArgs == null) {
+                jvmArgs = []
+            }
+            jvmArgs.addAll(args)
+        }
     }
-    onStop.add newValue
-  }
 
-  // use serverConfigFile instead
-  @Deprecated
-  void setJettyXmlFile(newValue) {
-    serverConfigFile = newValue
-  }
-
-  // use httpPort instead
-  @Deprecated
-  void setPort(Integer newValue) {
-    httpPort = newValue
-  }
-
-  void systemProperty(String name, Object value) {
-    if (systemProperties == null) {
-      systemProperties = [:]
+    void onStart(Closure newValue) {
+        if (onStart == null) {
+            onStart = []
+        }
+        onStart.add newValue
     }
-    systemProperties[name] = value
-  }
 
-  void systemProperties(Map<String, Object> m) {
-    if (m) {
-      if (systemProperties == null) {
-        systemProperties = [:]
-      }
-      systemProperties << m
+    void onStop(Closure newValue) {
+        if (onStop == null) {
+            onStop = []
+        }
+        onStop.add newValue
     }
-  }
+
+    void systemProperty(String name, Object value) {
+        if (systemProperties == null) {
+            systemProperties = [:]
+        }
+        systemProperties[name] = value
+    }
+
+    void systemProperties(Map<String, Object> m) {
+        if (m) {
+            if (systemProperties == null) {
+                systemProperties = [:]
+            }
+            systemProperties << m
+        }
+    }
 }

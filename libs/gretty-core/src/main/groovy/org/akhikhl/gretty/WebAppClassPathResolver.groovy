@@ -14,6 +14,6 @@ package org.akhikhl.gretty
  */
 interface WebAppClassPathResolver {
 
-  Collection<URL> resolveWebAppClassPath(WebAppConfig wconfig)
+    Collection<URL> resolveWebAppClassPath(WebAppConfig wconfig)
 }
 

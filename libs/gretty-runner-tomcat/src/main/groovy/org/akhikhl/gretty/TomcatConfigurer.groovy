@@ -20,15 +20,15 @@ import org.apache.tomcat.JarScanner
  */
 interface TomcatConfigurer {
 
-  ContextConfig createContextConfig(URL[] classpathUrls)
+    ContextConfig createContextConfig(URL[] classpathUrls)
 
-  JarScanner createJarScanner(JarScanner jarScanner, JarSkipPatterns skipPatterns)
+    JarScanner createJarScanner(JarScanner jarScanner, JarSkipPatterns skipPatterns)
 
-  void setBaseDir(Tomcat tomcat, File baseDir)
+    void setBaseDir(Tomcat tomcat, File baseDir)
 
-  void setResourceBase(StandardContext context, Map webappParams)
+    void setResourceBase(StandardContext context, Map webappParams)
 
-  void setService(Tomcat tomcat, Service service)
+    void setService(Tomcat tomcat, Service service)
 
-  void setEngine(Tomcat tomcat, Service service)
+    void setEngine(Tomcat tomcat, Service service)
 }

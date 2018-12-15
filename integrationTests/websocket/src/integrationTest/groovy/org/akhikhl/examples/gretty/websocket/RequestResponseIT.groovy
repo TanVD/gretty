@@ -13,43 +13,43 @@ import geb.spock.GebReportingSpec
 
 class RequestResponseIT extends GebReportingSpec {
 
-  private static String host
-  private static int port
-  private static String contextPath
+    private static String host
+    private static int port
+    private static String contextPath
 
-  void setupSpec() {
-    host = System.getProperty('gretty.host')
-    port = System.getProperty('gretty.port') as int
-    contextPath = System.getProperty('gretty.contextPath')
-  }
-
-  def 'should get expected static page'() {
-    setup:
-    go "http://${host}:${port}${contextPath}/index.html"
-    expect:
-    $('h1').text() == 'Websocket chat'
-  }
-
-  def 'should send chat messages'() {
-    setup:
-    String url = "http://${host}:${port}${contextPath}/index.html"
-    go url
-    def otherBrowser
-    withNewWindow({ $('#openNewChat').click() }, close: false) {
-      $('#username').value('a')
-      $('#message').value('xxx')
-      $('#btnSend').click()
-      otherBrowser = getCurrentWindow()
+    void setupSpec() {
+        host = System.getProperty('gretty.host')
+        port = System.getProperty('gretty.port') as int
+        contextPath = System.getProperty('gretty.contextPath')
     }
-    $('#username').value('b')
-    $('#message').value('yyy')
-    $('#btnSend').click()
-    // Thread.sleep(200)
-    withWindow(otherBrowser) {
-      waitFor { $('#chat-content').value() }
-      assert $('#chat-content').value().contains('yyy')
+
+    def 'should get expected static page'() {
+        setup:
+        go "http://${host}:${port}${contextPath}/index.html"
+        expect:
+        $('h1').text() == 'Websocket chat'
     }
-    waitFor { $('#chat-content').value() }
-    assert $('#chat-content').value().contains('xxx')
-  }
+
+    def 'should send chat messages'() {
+        setup:
+        String url = "http://${host}:${port}${contextPath}/index.html"
+        go url
+        def otherBrowser
+        withNewWindow({ $('#openNewChat').click() }, close: false) {
+            $('#username').value('a')
+            $('#message').value('xxx')
+            $('#btnSend').click()
+            otherBrowser = getCurrentWindow()
+        }
+        $('#username').value('b')
+        $('#message').value('yyy')
+        $('#btnSend').click()
+        // Thread.sleep(200)
+        withWindow(otherBrowser) {
+            waitFor { $('#chat-content').value() }
+            assert $('#chat-content').value().contains('yyy')
+        }
+        waitFor { $('#chat-content').value() }
+        assert $('#chat-content').value().contains('xxx')
+    }
 }

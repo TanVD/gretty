@@ -16,22 +16,22 @@ import static javax.servlet.http.HttpServletResponse.*
 
 class RequestResponseSpec extends GrettyAjaxSpec {
 
-  def 'should get expected response from Jersey web-service'() {
-    when:
-    def result = [:]
-    conn.request GET, TEXT, {
-      uri.path = "$contextPath/testresource"
-      response.success = response.failure = { resp, data ->
-        result.statusCode = resp.statusLine.statusCode
-        if (data instanceof InputStreamReader) {
-          result.data = data.text
-        } else {
-          result.data = data
+    def 'should get expected response from Jersey web-service'() {
+        when:
+        def result = [:]
+        conn.request GET, TEXT, {
+            uri.path = "$contextPath/testresource"
+            response.success = response.failure = { resp, data ->
+                result.statusCode = resp.statusLine.statusCode
+                if (data instanceof InputStreamReader) {
+                    result.data = data.text
+                } else {
+                    result.data = data
+                }
+            }
         }
-      }
+        then:
+        result.statusCode == SC_OK
+        result.data == 'Hello World!'
     }
-    then:
-    result.statusCode == SC_OK
-    result.data == 'Hello World!'
-  }
 }

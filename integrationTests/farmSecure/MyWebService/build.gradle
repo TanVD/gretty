@@ -3,8 +3,8 @@ apply plugin: 'org.gretty'
 apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 
 gretty {
-  httpEnabled = false
-  httpsEnabled = true
-  realm = 'auth'
-  realmConfigFile = '../security'
+    httpEnabled = false
+    httpsEnabled = true
+    realm = 'auth'
+    realmConfigFile = '../security'
 }

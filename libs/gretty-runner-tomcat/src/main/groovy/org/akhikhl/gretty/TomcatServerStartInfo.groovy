@@ -23,67 +23,67 @@ import org.slf4j.LoggerFactory
 @CompileStatic(TypeCheckingMode.SKIP)
 class TomcatServerStartInfo {
 
-  protected final Logger log
+    protected final Logger log
 
-  TomcatServerStartInfo() {
-    log = LoggerFactory.getLogger(this.getClass())
-  }
-
-  def getInfo(Tomcat tomcat, Connector[] connectors, Map params) {
-
-    if (connectors == null) {
-      connectors = tomcat.service.findConnectors()
+    TomcatServerStartInfo() {
+        log = LoggerFactory.getLogger(this.getClass())
     }
 
-    def portsInfo = connectors.collect { it.port }
-    portsInfo = (portsInfo.size() == 1 ? 'port ' : 'ports ') + portsInfo.join(', ')
-    log.info '{} started and listening on {}', params.servletContainerDescription, portsInfo
+    def getInfo(Tomcat tomcat, Connector[] connectors, Map params) {
 
-    Connector httpConn = connectors.find { it.scheme == 'http' }
-    Connector httpsConn = connectors.find { it.scheme == 'https' }
+        if (connectors == null) {
+            connectors = tomcat.service.findConnectors()
+        }
 
-    List contextInfo = []
+        def portsInfo = connectors.collect { it.port }
+        portsInfo = (portsInfo.size() == 1 ? 'port ' : 'ports ') + portsInfo.join(', ')
+        log.info '{} started and listening on {}', params.servletContainerDescription, portsInfo
 
-    String host = tomcat.hostname == '0.0.0.0' ? 'localhost' : tomcat.hostname
+        Connector httpConn = connectors.find { it.scheme == 'http' }
+        Connector httpsConn = connectors.find { it.scheme == 'https' }
 
-    for (Context context in tomcat.host.findChildren().findAll { it instanceof Context }) {
-      log.info '{} runs at:', (context.name - '/')
-      if (httpConn) {
-        log.info '  http://{}:{}{}', host, httpConn.port, context.path
-        contextInfo.add([
-                protocol: 'http',
-                host: host,
-                port: httpConn.port,
-                contextPath: context.path,
-                baseURI: "http://${host}:${httpConn.port}${context.path}"
-        ])
-      }
-      if (httpsConn) {
-        log.info '  https://{}:{}{}', host, httpsConn.port, context.path
-        contextInfo.add([
-                protocol: 'https',
-                host: host,
-                port: httpsConn.port,
-                contextPath: context.path,
-                baseURI: "https://${host}:${httpsConn.port}${context.path}"
-        ])
-      }
+        List contextInfo = []
+
+        String host = tomcat.hostname == '0.0.0.0' ? 'localhost' : tomcat.hostname
+
+        for (Context context in tomcat.host.findChildren().findAll { it instanceof Context }) {
+            log.info '{} runs at:', (context.name - '/')
+            if (httpConn) {
+                log.info '  http://{}:{}{}', host, httpConn.port, context.path
+                contextInfo.add([
+                        protocol: 'http',
+                        host: host,
+                        port: httpConn.port,
+                        contextPath: context.path,
+                        baseURI: "http://${host}:${httpConn.port}${context.path}"
+                ])
+            }
+            if (httpsConn) {
+                log.info '  https://{}:{}{}', host, httpsConn.port, context.path
+                contextInfo.add([
+                        protocol: 'https',
+                        host: host,
+                        port: httpsConn.port,
+                        contextPath: context.path,
+                        baseURI: "https://${host}:${httpsConn.port}${context.path}"
+                ])
+            }
+        }
+
+        def serverStartInfo = [status: 'successfully started']
+
+        serverStartInfo.host = host
+
+        if (httpConn) {
+            serverStartInfo.httpPort = httpConn.port
+        }
+
+        if (httpsConn) {
+            serverStartInfo.httpsPort = httpsConn.port
+        }
+
+        serverStartInfo.contexts = contextInfo
+        serverStartInfo
     }
-
-    def serverStartInfo = [status: 'successfully started']
-
-    serverStartInfo.host = host
-
-    if (httpConn) {
-      serverStartInfo.httpPort = httpConn.port
-    }
-
-    if (httpsConn) {
-      serverStartInfo.httpsPort = httpsConn.port
-    }
-
-    serverStartInfo.contexts = contextInfo
-    serverStartInfo
-  }
 }
 

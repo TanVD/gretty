@@ -4,39 +4,39 @@ apply from: rootProject.file('common.gradle')
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-  compile "org.codehaus.groovy:groovy:$groovy_version"
-  compile "org.codehaus.groovy:groovy-json:$groovy_version"
-  compile "ch.qos.logback:logback-classic:$logback_version"
-  compile 'commons-cli:commons-cli:1.2'
-  compile 'commons-configuration:commons-configuration:1.10'
-  compile 'commons-io:commons-io:2.4'
-  compile 'org.apache.commons:commons-lang3:3.3.2'
-  compile 'org.bouncycastle:bcprov-jdk15on:1.60'
-  compile "org.springframework.boot:spring-boot-devtools:$springBootVersion"
+    compile "org.codehaus.groovy:groovy:$groovy_version"
+    compile "org.codehaus.groovy:groovy-json:$groovy_version"
+    compile "ch.qos.logback:logback-classic:$logback_version"
+    compile 'commons-cli:commons-cli:1.2'
+    compile 'commons-configuration:commons-configuration:1.10'
+    compile 'commons-io:commons-io:2.4'
+    compile 'org.apache.commons:commons-lang3:3.3.2'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.60'
+    compile "org.springframework.boot:spring-boot-devtools:$springBootVersion"
 }
 
 tasks.processResources {
-  def props = [
-          grettyVersion: project.version,
-          jetty7Version: project.jetty7_version,
-          jetty7ServletApiVersion: project.jetty7_servlet_api_version,
-          jetty8Version: project.jetty8_version,
-          jetty8ServletApiVersion: project.jetty8_servlet_api_version,
-          jetty9Version: project.jetty9_version,
-          jetty93Version: project.jetty93_version,
-          jetty94Version: project.jetty94_version,
-          jetty9ServletApiVersion: project.jetty9_servlet_api_version,
-          tomcat85Version: project.tomcat85_version,
-          tomcat85ServletApiVersion: project.tomcat85_servlet_api_version,
-          tomcat9Version: project.tomcat9_version,
-          tomcat9ServletApiVersion: project.tomcat9_servlet_api_version,
-          springBootVersion: project.springBootVersion,
-          springLoadedVersion: project.springLoadedVersion,
-          hotswapAgentVersion: project.hotswapAgentVersion,
-          springVersion: project.springVersion,
-          logbackVersion: project.logback_version,
-          asmVersion: project.asm_version
-  ]
-  inputs.properties props
-  filter ReplaceTokens, tokens: props
+    def props = [
+            grettyVersion: project.version,
+            jetty7Version: project.jetty7_version,
+            jetty7ServletApiVersion: project.jetty7_servlet_api_version,
+            jetty8Version: project.jetty8_version,
+            jetty8ServletApiVersion: project.jetty8_servlet_api_version,
+            jetty9Version: project.jetty9_version,
+            jetty93Version: project.jetty93_version,
+            jetty94Version: project.jetty94_version,
+            jetty9ServletApiVersion: project.jetty9_servlet_api_version,
+            tomcat85Version: project.tomcat85_version,
+            tomcat85ServletApiVersion: project.tomcat85_servlet_api_version,
+            tomcat9Version: project.tomcat9_version,
+            tomcat9ServletApiVersion: project.tomcat9_servlet_api_version,
+            springBootVersion: project.springBootVersion,
+            springLoadedVersion: project.springLoadedVersion,
+            hotswapAgentVersion: project.hotswapAgentVersion,
+            springVersion: project.springVersion,
+            logbackVersion: project.logback_version,
+            asmVersion: project.asm_version
+    ]
+    inputs.properties props
+    filter ReplaceTokens, tokens: props
 }

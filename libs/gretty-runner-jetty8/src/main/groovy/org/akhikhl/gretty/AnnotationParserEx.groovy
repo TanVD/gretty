@@ -24,115 +24,115 @@ import java.util.jar.JarInputStream
  */
 class AnnotationParserEx extends AnnotationParser {
 
-  private static final Logger LOG = Log.getLogger(AnnotationParserEx.class)
+    private static final Logger LOG = Log.getLogger(AnnotationParserEx.class)
 
-  private boolean isValidClassFileName(String name) {
-    //no name cannot be valid
-    if (name == null || name.length() == 0) {
-      return false
+    private boolean isValidClassFileName(String name) {
+        //no name cannot be valid
+        if (name == null || name.length() == 0) {
+            return false
+        }
+
+        //skip anything that is not a class file
+        if (!name.toLowerCase(Locale.ENGLISH).endsWith(".class")) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Not a class: {}", name)
+            };
+            return false;
+        }
+
+        //skip any classfiles that are not a valid java identifier
+        int c0 = 0
+        int ldir = name.lastIndexOf('/', name.length() - 6)
+        c0 = (ldir > -1 ? ldir + 1 : c0)
+        if (!Character.isJavaIdentifierStart(name.charAt(c0))) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Not a java identifier: {}" + name)
+            }
+            return false
+        }
+
+        return true
     }
 
-    //skip anything that is not a class file
-    if (!name.toLowerCase(Locale.ENGLISH).endsWith(".class")) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Not a class: {}", name)
-      };
-      return false;
+    private boolean isValidClassFilePath(String path) {
+        //no path is not valid
+        if (path == null || path.length() == 0) {
+            return false
+        }
+
+        //skip any classfiles that are in a hidden directory
+        if (path.startsWith(".") || path.contains("/.")) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Contains hidden dirs: {}" + path)
+            }
+            return false
+        }
+
+        return true
     }
 
-    //skip any classfiles that are not a valid java identifier
-    int c0 = 0
-    int ldir = name.lastIndexOf('/', name.length() - 6)
-    c0 = (ldir > -1 ? ldir + 1 : c0)
-    if (!Character.isJavaIdentifierStart(name.charAt(c0))) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Not a java identifier: {}" + name)
-      }
-      return false
+    @Override
+    public void parse(Resource res, ClassNameResolver resolver) {
+        if (res.exists() && !res.isDirectory() && res.toString().endsWith('.jar')) {
+            parseJar(res, resolver)
+        } else {
+            super.parse(res, resolver)
+        }
     }
 
-    return true
-  }
+    protected void parseJar(Resource jarResource, ClassNameResolver resolver) {
 
-  private boolean isValidClassFilePath(String path) {
-    //no path is not valid
-    if (path == null || path.length() == 0) {
-      return false
-    }
+        InputStream ins = jarResource.getInputStream()
+        if (ins == null) {
+            return
+        }
 
-    //skip any classfiles that are in a hidden directory
-    if (path.startsWith(".") || path.contains("/.")) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Contains hidden dirs: {}" + path)
-      }
-      return false
-    }
+        MultiException me = new MultiException()
 
-    return true
-  }
-
-  @Override
-  public void parse(Resource res, ClassNameResolver resolver) {
-    if (res.exists() && !res.isDirectory() && res.toString().endsWith('.jar')) {
-      parseJar(res, resolver)
-    } else {
-      super.parse(res, resolver)
-    }
-  }
-
-  protected void parseJar(Resource jarResource, ClassNameResolver resolver) {
-
-    InputStream ins = jarResource.getInputStream()
-    if (ins == null) {
-      return
-    }
-
-    MultiException me = new MultiException()
-
-    JarInputStream jar_in = new JarInputStream(ins)
-    try {
-      JarEntry entry = jar_in.getNextJarEntry()
-      while (entry != null) {
+        JarInputStream jar_in = new JarInputStream(ins)
         try {
-          parseJarEntry(jarResource, entry, resolver)
-        } catch (Exception e) {
-          println "Error scanning entry " + entry.getName() + " from jar " + jarResource + " e=$e"
-          me.add(new RuntimeException("Error scanning entry " + entry.getName() + " from jar " + jarResource, e))
+            JarEntry entry = jar_in.getNextJarEntry()
+            while (entry != null) {
+                try {
+                    parseJarEntry(jarResource, entry, resolver)
+                } catch (Exception e) {
+                    println "Error scanning entry " + entry.getName() + " from jar " + jarResource + " e=$e"
+                    me.add(new RuntimeException("Error scanning entry " + entry.getName() + " from jar " + jarResource, e))
+                }
+                entry = jar_in.getNextJarEntry()
+            }
+        } finally {
+            jar_in.close()
         }
-        entry = jar_in.getNextJarEntry()
-      }
-    } finally {
-      jar_in.close()
-    }
-    me.ifExceptionThrow()
-  }
-
-  protected void parseJarEntry(Resource jar, JarEntry entry, final ClassNameResolver resolver) {
-    if (jar == null || entry == null) {
-      return
+        me.ifExceptionThrow()
     }
 
-    //skip directories
-    if (entry.isDirectory()) {
-      return
-    }
-
-    String name = entry.getName()
-
-    //check file is a valid class file name
-    if (isValidClassFileName(name) && isValidClassFilePath(name)) {
-
-      String shortName = name.replace('/', '.').substring(0, name.length() - 6)
-
-      if ((resolver == null)
-              ||
-              (!resolver.isExcluded(shortName) && (!isParsed(shortName) || resolver.shouldOverride(shortName)))) {
-        Resource clazz = Resource.newResource("jar:" + jar.getURI() + "!/" + name)
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Scanning class from jar {}", clazz)
+    protected void parseJarEntry(Resource jar, JarEntry entry, final ClassNameResolver resolver) {
+        if (jar == null || entry == null) {
+            return
         }
-        scanClass(clazz.getInputStream())
-      }
+
+        //skip directories
+        if (entry.isDirectory()) {
+            return
+        }
+
+        String name = entry.getName()
+
+        //check file is a valid class file name
+        if (isValidClassFileName(name) && isValidClassFilePath(name)) {
+
+            String shortName = name.replace('/', '.').substring(0, name.length() - 6)
+
+            if ((resolver == null)
+                    ||
+                    (!resolver.isExcluded(shortName) && (!isParsed(shortName) || resolver.shouldOverride(shortName)))) {
+                Resource clazz = Resource.newResource("jar:" + jar.getURI() + "!/" + name)
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Scanning class from jar {}", clazz)
+                }
+                scanClass(clazz.getInputStream())
+            }
+        }
     }
-  }
 }

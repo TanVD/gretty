@@ -3,7 +3,7 @@ apply plugin: 'org.gretty'
 apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 
 gretty {
-  overlay ':testAnnotations'
+    overlay ':testAnnotations'
 }
 
 // annotations are not supported in jetty7

@@ -14,13 +14,13 @@ package org.akhikhl.gretty
  */
 interface Launcher {
 
-  void afterLaunch()
+    void afterLaunch()
 
-  void beforeLaunch()
+    void beforeLaunch()
 
-  void dispose()
+    void dispose()
 
-  void launch()
+    void launch()
 
-  Thread launchThread()
+    Thread launchThread()
 }

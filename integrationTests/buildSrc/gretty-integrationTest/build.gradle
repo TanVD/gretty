@@ -4,10 +4,10 @@ apply plugin: 'groovy'
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-  compile gradleApi()
-  compile "commons-configuration:commons-configuration:$commons_configuration_version"
-  compile "de.undercouch:gradle-download-task:$gradle_download_task_version"
-  compile "org.gretty:gretty:$version"
+    compile gradleApi()
+    compile "commons-configuration:commons-configuration:$commons_configuration_version"
+    compile "de.undercouch:gradle-download-task:$gradle_download_task_version"
+    compile "org.gretty:gretty:$version"
 }
 
 def projectProps = [
@@ -27,9 +27,9 @@ def projectProps = [
 ]
 
 processResources {
-  inputs.properties projectProps
-  outputs.upToDateWhen { false }
-  filesMatching('**/project.properties') {
-    filter ReplaceTokens, tokens: projectProps
-  }
+    inputs.properties projectProps
+    outputs.upToDateWhen { false }
+    filesMatching('**/project.properties') {
+        filter ReplaceTokens, tokens: projectProps
+    }
 }

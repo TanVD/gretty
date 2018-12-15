@@ -3,9 +3,9 @@ apply plugin: 'org.gretty'
 apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 
 gretty {
-  contextPath = '/helloGrettyOverlay'
-  overlay ':helloGretty'
-  servletContainer = 'jetty7'
+    contextPath = '/helloGrettyOverlay'
+    overlay ':helloGretty'
+    servletContainer = 'jetty7'
 }
 
 defineIntegrationTest()

@@ -20,17 +20,17 @@ import org.eclipse.jetty.util.resource.Resource
  */
 class DefaultServletEx extends DefaultServlet {
 
-  Resource getResource(String pathInContext) {
-    def result = super.getResource(pathInContext)
-    if (result instanceof FileResource && !result.getFile()?.exists()) {
-      if (pathInContext.startsWith('/webjars/')) {
-        String webjarsPath = 'META-INF/resources' + pathInContext
-        URL resourceURL = Thread.currentThread().getContextClassLoader().getResource(webjarsPath)
-        if (resourceURL) {
-          result = new JarResource(resourceURL)
+    Resource getResource(String pathInContext) {
+        def result = super.getResource(pathInContext)
+        if (result instanceof FileResource && !result.getFile()?.exists()) {
+            if (pathInContext.startsWith('/webjars/')) {
+                String webjarsPath = 'META-INF/resources' + pathInContext
+                URL resourceURL = Thread.currentThread().getContextClassLoader().getResource(webjarsPath)
+                if (resourceURL) {
+                    result = new JarResource(resourceURL)
+                }
+            }
         }
-      }
+        result
     }
-    result
-  }
 }

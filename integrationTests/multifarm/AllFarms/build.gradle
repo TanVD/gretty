@@ -2,11 +2,11 @@ apply plugin: 'org.gretty'
 apply plugin: 'org.gretty.internal.integrationTests.BasePlugin'
 
 farm {
-  include ':multifarm:MyWebApp'
-  include ':multifarm:MyWebApp2'
+    include ':multifarm:MyWebApp'
+    include ':multifarm:MyWebApp2'
 }
 
 task('testAll') {
-  dependsOn 'farmIntegrationTest'
-  rootProject.tasks.testAll.dependsOn it
+    dependsOn 'farmIntegrationTest'
+    rootProject.tasks.testAll.dependsOn it
 }

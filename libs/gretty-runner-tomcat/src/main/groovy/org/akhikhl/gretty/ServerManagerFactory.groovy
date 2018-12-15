@@ -18,9 +18,9 @@ import groovy.transform.TypeCheckingMode
 @CompileStatic(TypeCheckingMode.SKIP)
 class ServerManagerFactory {
 
-  static ServerManager createServerManager() {
-    def TomcatConfigurer = Class.forName('org.akhikhl.gretty.TomcatConfigurerImpl', true, ServerManagerFactory.classLoader)
-    new TomcatServerManager(TomcatConfigurer.newInstance())
-  }
+    static ServerManager createServerManager() {
+        def TomcatConfigurer = Class.forName('org.akhikhl.gretty.TomcatConfigurerImpl', true, ServerManagerFactory.classLoader)
+        new TomcatServerManager(TomcatConfigurer.newInstance())
+    }
 }
 

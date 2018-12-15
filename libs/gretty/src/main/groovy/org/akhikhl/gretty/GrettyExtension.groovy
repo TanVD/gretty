@@ -11,35 +11,30 @@ package org.akhikhl.gretty
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-/**
- *
- * @author akhikhl
- */
 @CompileStatic(TypeCheckingMode.SKIP)
 class GrettyExtension extends GrettyConfig {
 
-  int debugPort = 5005
-  boolean debugSuspend = true
-  boolean jacocoEnabled = true;
+    int debugPort = 5005
+    boolean debugSuspend = true
 
-  protected List overlays = []
+    protected List overlays = []
 
-  String integrationTestTask = 'integrationTest'
+    String integrationTestTask = 'integrationTest'
 
-  protected afterEvaluate = []
+    protected afterEvaluate = []
 
-  Closure webappCopy = {}
+    Closure webappCopy = {}
 
-  boolean autoConfigureRepositories = false
+    boolean autoConfigureRepositories = false
 
-  void afterEvaluate(Closure closure) {
-    afterEvaluate.add(closure)
-  }
-
-  void overlay(def newValue) {
-    if (!(newValue instanceof String)) {
-      throw new Exception("Overlay ${newValue?.toString()} should be a string")
+    void afterEvaluate(Closure closure) {
+        afterEvaluate.add(closure)
     }
-    overlays.add newValue
-  }
+
+    void overlay(def newValue) {
+        if (!(newValue instanceof String)) {
+            throw new Exception("Overlay ${newValue?.toString()} should be a string")
+        }
+        overlays.add newValue
+    }
 }

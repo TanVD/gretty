@@ -24,37 +24,37 @@ import org.slf4j.LoggerFactory
 @CompileStatic(TypeCheckingMode.SKIP)
 class SpringloadedCleanup implements LifecycleListener {
 
-  protected final Logger log
+    protected final Logger log
 
-  SpringloadedCleanup() {
-    log = LoggerFactory.getLogger(this.getClass())
-  }
+    SpringloadedCleanup() {
+        log = LoggerFactory.getLogger(this.getClass())
+    }
 
-  @Override
-  public void lifecycleEvent(LifecycleEvent event) {
-    if (event.getType() == Lifecycle.BEFORE_STOP_EVENT) {
-      cleanup(event.getLifecycle())
+    @Override
+    public void lifecycleEvent(LifecycleEvent event) {
+        if (event.getType() == Lifecycle.BEFORE_STOP_EVENT) {
+            cleanup(event.getLifecycle())
+        }
     }
-  }
 
-  protected void cleanup(StandardContext context) {
-    def TypeRegistry
-    try {
-      TypeRegistry = Class.forName('org.springsource.loaded.TypeRegistry', true, this.class.getClassLoader())
-    } catch (ClassNotFoundException e) {
-      // springloaded not present, just ignore
-      return
+    protected void cleanup(StandardContext context) {
+        def TypeRegistry
+        try {
+            TypeRegistry = Class.forName('org.springsource.loaded.TypeRegistry', true, this.class.getClassLoader())
+        } catch (ClassNotFoundException e) {
+            // springloaded not present, just ignore
+            return
+        }
+        ClassLoader classLoader = context.getLoader().getClassLoader()
+        while (classLoader != null) {
+            def typeRegistry = TypeRegistry.getTypeRegistryFor(classLoader)
+            if (typeRegistry != null && typeRegistry.@fsWatcher != null) {
+                log.info 'springloaded shutdown: {}', typeRegistry.@fsWatcher.@thread
+                typeRegistry.@fsWatcher.shutdown()
+                typeRegistry.@fsWatcher.@thread.join()
+            }
+            classLoader = classLoader.getParent()
+        }
     }
-    ClassLoader classLoader = context.getLoader().getClassLoader()
-    while (classLoader != null) {
-      def typeRegistry = TypeRegistry.getTypeRegistryFor(classLoader)
-      if (typeRegistry != null && typeRegistry.@fsWatcher != null) {
-        log.info 'springloaded shutdown: {}', typeRegistry.@fsWatcher.@thread
-        typeRegistry.@fsWatcher.shutdown()
-        typeRegistry.@fsWatcher.@thread.join()
-      }
-      classLoader = classLoader.getParent()
-    }
-  }
 }
 

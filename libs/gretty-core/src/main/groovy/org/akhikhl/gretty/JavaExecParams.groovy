@@ -17,46 +17,46 @@ import groovy.transform.ToString
 @ToString
 class JavaExecParams {
 
-  String main
+    String main
 
-  List<String> jvmArgs = []
+    List<String> jvmArgs = []
 
-  List<String> args = []
+    List<String> args = []
 
-  boolean debug = false
-  int debugPort = 5005
-  boolean debugSuspend = true
+    boolean debug = false
+    int debugPort = 5005
+    boolean debugSuspend = true
 
-  Map<String, String> systemProperties = [:]
+    Map<String, String> systemProperties = [:]
 
-  void arg(String a) {
-    args.add(a)
-  }
-
-  void args(String... a) {
-    args.addAll(a)
-  }
-
-  void jvmArg(String a) {
-    jvmArgs.add(a)
-  }
-
-  void jvmArgs(String... a) {
-    jvmArgs.addAll(a)
-  }
-
-  void systemProperties(Map<String, String> m) {
-    if (systemProperties == null) {
-      systemProperties = [:]
+    void arg(String a) {
+        args.add(a)
     }
-    systemProperties << m
-  }
 
-  void systemProperty(String name, String value) {
-    if (systemProperties == null) {
-      systemProperties = [:]
+    void args(String... a) {
+        args.addAll(a)
     }
-    systemProperties[name] = value
-  }
+
+    void jvmArg(String a) {
+        jvmArgs.add(a)
+    }
+
+    void jvmArgs(String... a) {
+        jvmArgs.addAll(a)
+    }
+
+    void systemProperties(Map<String, String> m) {
+        if (systemProperties == null) {
+            systemProperties = [:]
+        }
+        systemProperties << m
+    }
+
+    void systemProperty(String name, String value) {
+        if (systemProperties == null) {
+            systemProperties = [:]
+        }
+        systemProperties[name] = value
+    }
 }
 

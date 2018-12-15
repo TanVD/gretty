@@ -13,41 +13,41 @@ package org.akhikhl.gretty
  */
 interface JettyConfigurer {
 
-  def addLifeCycleListener(lifecycle, listener)
+    def addLifeCycleListener(lifecycle, listener)
 
-  void applyContextConfigFile(webAppContext, URL contextConfigFile)
+    void applyContextConfigFile(webAppContext, URL contextConfigFile)
 
-  void applyJettyXml(server, String jettyXml)
+    void applyJettyXml(server, String jettyXml)
 
-  void configureConnectors(server, Map serverParams)
+    void configureConnectors(server, Map serverParams)
 
-  void configureSecurity(context, String realm, String realmConfigFile, boolean singleSignOn)
+    void configureSecurity(context, String realm, String realmConfigFile, boolean singleSignOn)
 
-  void configureSessionManager(server, context, Map serverParams, Map webappParams)
+    void configureSessionManager(server, context, Map serverParams, Map webappParams)
 
-  def createResourceCollection(List paths)
+    def createResourceCollection(List paths)
 
-  def createServer()
+    def createServer()
 
-  def createWebAppContext(Map serverParams, Map webappParams)
+    def createWebAppContext(Map serverParams, Map webappParams)
 
-  def findHttpConnector(server)
+    def findHttpConnector(server)
 
-  def findHttpsConnector(server)
+    def findHttpsConnector(server)
 
-  URL findResourceURL(baseResource, String path)
+    URL findResourceURL(baseResource, String path)
 
-  List getConfigurations(Map webappParams)
+    List getConfigurations(Map webappParams)
 
-  void removeLifeCycleListener(lifecycle, listener)
+    void removeLifeCycleListener(lifecycle, listener)
 
-  void setConfigurationsToWebAppContext(context, List configurations)
+    void setConfigurationsToWebAppContext(context, List configurations)
 
-  void setHandlersToServer(server, List handlers)
+    void setHandlersToServer(server, List handlers)
 
-  List getHandlersByContextPaths(server, List contextPaths)
+    List getHandlersByContextPaths(server, List contextPaths)
 
-  void removeHandlerFromServer(server, handler)
+    void removeHandlerFromServer(server, handler)
 
-  void addHandlerToServer(server, handler)
+    void addHandlerToServer(server, handler)
 }

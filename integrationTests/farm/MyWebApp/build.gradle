@@ -4,18 +4,18 @@ apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 apply plugin: 'org.gretty.internal.integrationTests.FarmIntegrationTestPlugin'
 
 dependencies {
-  compile 'org.webjars:bootstrap:3.2.0'
-  compile 'org.webjars:jquery:2.1.1'
+    compile 'org.webjars:bootstrap:3.2.0'
+    compile 'org.webjars:jquery:2.1.1'
 }
 
 farm {
-  webapp project
-  webapp ':farm:MyWebService'
+    webapp project
+    webapp ':farm:MyWebService'
 }
 
 defineIntegrationTest()
 
 testAll.dependsOn defineFarmIntegrationTestAllContainers({
-  webapp project
-  webapp ':farm:MyWebService'
+    webapp project
+    webapp ':farm:MyWebService'
 })

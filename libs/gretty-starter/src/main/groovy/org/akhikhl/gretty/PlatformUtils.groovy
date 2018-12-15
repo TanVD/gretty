@@ -14,8 +14,8 @@ package org.akhikhl.gretty
  */
 class PlatformUtils {
 
-  static boolean isWindows() {
-    System.getProperty('os.name', 'generic').toLowerCase().indexOf('win') >= 0
-  }
+    static boolean isWindows() {
+        System.getProperty('os.name', 'generic').toLowerCase().indexOf('win') >= 0
+    }
 }
 

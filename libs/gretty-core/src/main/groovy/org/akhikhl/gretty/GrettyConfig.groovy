@@ -14,33 +14,33 @@ package org.akhikhl.gretty
  */
 class GrettyConfig {
 
-  @Delegate
-  protected ServerConfig serverConfig = new ServerConfig()
+    @Delegate
+    protected ServerConfig serverConfig = new ServerConfig()
 
-  @Delegate
-  protected WebAppConfig webAppConfig = new WebAppConfig()
+    @Delegate
+    protected WebAppConfig webAppConfig = new WebAppConfig()
 
-  // use contextConfigFile instead
-  @Deprecated
-  def getJettyEnvXmlFile() {
-    webAppConfig.getJettyEnvXmlFile()
-  }
+    // use contextConfigFile instead
+    @Deprecated
+    def getJettyEnvXmlFile() {
+        webAppConfig.getJettyEnvXmlFile()
+    }
 
-  // use contextConfigFile instead
-  @Deprecated
-  void setJettyEnvXmlFile(newValue) {
-    webAppConfig.setJettyEnvXmlFile(newValue)
-  }
+    // use contextConfigFile instead
+    @Deprecated
+    void setJettyEnvXmlFile(newValue) {
+        webAppConfig.setJettyEnvXmlFile(newValue)
+    }
 
-  // use serverConfigFile instead
-  @Deprecated
-  def getJettyXmlFile() {
-    serverConfig.getJettyXmlFile()
-  }
+    // use serverConfigFile instead
+    @Deprecated
+    def getJettyXmlFile() {
+        serverConfig.getJettyXmlFile()
+    }
 
-  // use serverConfigFile instead
-  @Deprecated
-  void setJettyXmlFile(newValue) {
-    serverConfig.setJettyXmlFile(newValue)
-  }
+    // use serverConfigFile instead
+    @Deprecated
+    void setJettyXmlFile(newValue) {
+        serverConfig.setJettyXmlFile(newValue)
+    }
 }

@@ -1,3 +1,3 @@
 filter relPath: '/', {
-  redirect 'testresource'
+    redirect 'testresource'
 }

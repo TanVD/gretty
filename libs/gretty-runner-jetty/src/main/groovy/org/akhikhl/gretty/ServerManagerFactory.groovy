@@ -18,9 +18,9 @@ import groovy.transform.TypeCheckingMode
 @CompileStatic(TypeCheckingMode.SKIP)
 class ServerManagerFactory {
 
-  static ServerManager createServerManager() {
-    def JettyConfigurer = Class.forName('org.akhikhl.gretty.JettyConfigurerImpl', true, ServerManagerFactory.classLoader)
-    new JettyServerManager(JettyConfigurer.newInstance())
-  }
+    static ServerManager createServerManager() {
+        def JettyConfigurer = Class.forName('org.akhikhl.gretty.JettyConfigurerImpl', true, ServerManagerFactory.classLoader)
+        new JettyServerManager(JettyConfigurer.newInstance())
+    }
 }
 

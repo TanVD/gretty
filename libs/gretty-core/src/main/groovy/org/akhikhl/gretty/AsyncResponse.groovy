@@ -21,58 +21,58 @@ import java.util.concurrent.Future
  */
 class AsyncResponse {
 
-  protected static final Logger log = LoggerFactory.getLogger(AsyncResponse)
+    protected static final Logger log = LoggerFactory.getLogger(AsyncResponse)
 
-  final ExecutorService executorService
-  final int statusPort
-  private listeningForResponseLock = new Object()
-  private boolean listeningForResponse
+    final ExecutorService executorService
+    final int statusPort
+    private listeningForResponseLock = new Object()
+    private boolean listeningForResponse
 
-  AsyncResponse(ExecutorService executorService, int statusPort) {
-    this.executorService = executorService
-    this.statusPort = statusPort
-  }
-
-  String getStatus(int servicePort) {
-    log.debug 'getStatus({})', servicePort
-
-    Future futureStatus = getResponse()
-
-    def handleConnectionError = { e ->
-      log.debug 'Sending "notStarted" to status port...'
-      ServiceProtocol.send(statusPort, 'notStarted')
+    AsyncResponse(ExecutorService executorService, int statusPort) {
+        this.executorService = executorService
+        this.statusPort = statusPort
     }
 
-    try {
-      log.debug 'Sending "status" command to (probably) running server...'
-      ServiceProtocol.send(servicePort, 'status')
-    } catch (java.net.ConnectException e) {
-      handleConnectionError(e)
-    } catch (java.net.SocketException e) {
-      handleConnectionError(e)
-    }
+    String getStatus(int servicePort) {
+        log.debug 'getStatus({})', servicePort
 
-    futureStatus.get()
-  }
+        Future futureStatus = getResponse()
 
-  Future getResponse() {
-    listeningForResponse = false
-    def future = executorService.submit({
-      synchronized (listeningForResponseLock) {
-        listeningForResponse = true
-      }
-      ServiceProtocol.readMessage(statusPort)
-    } as Callable)
-    log.debug 'waiting for AsyncResponse.getResponse to be listen...'
-    while (true) {
-      synchronized (listeningForResponseLock) {
-        if (listeningForResponse) {
-          break
+        def handleConnectionError = { e ->
+            log.debug 'Sending "notStarted" to status port...'
+            ServiceProtocol.send(statusPort, 'notStarted')
         }
-      }
-      Thread.sleep(100)
+
+        try {
+            log.debug 'Sending "status" command to (probably) running server...'
+            ServiceProtocol.send(servicePort, 'status')
+        } catch (java.net.ConnectException e) {
+            handleConnectionError(e)
+        } catch (java.net.SocketException e) {
+            handleConnectionError(e)
+        }
+
+        futureStatus.get()
     }
-    log.debug 'AsyncResponse.getResponse is listening.'
-    future
-  }
+
+    Future getResponse() {
+        listeningForResponse = false
+        def future = executorService.submit({
+            synchronized (listeningForResponseLock) {
+                listeningForResponse = true
+            }
+            ServiceProtocol.readMessage(statusPort)
+        } as Callable)
+        log.debug 'waiting for AsyncResponse.getResponse to be listen...'
+        while (true) {
+            synchronized (listeningForResponseLock) {
+                if (listeningForResponse) {
+                    break
+                }
+            }
+            Thread.sleep(100)
+        }
+        log.debug 'AsyncResponse.getResponse is listening.'
+        future
+    }
 }

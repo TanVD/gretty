@@ -18,26 +18,26 @@ import groovy.transform.TypeCheckingMode
 @CompileStatic(TypeCheckingMode.SKIP)
 class FarmsConfig {
 
-  protected final Map farmsMap_ = [:]
+    protected final Map farmsMap_ = [:]
 
-  FarmConfig createFarm() {
-    new FarmConfig()
-  }
-
-  void farm(String name = null, Closure closure) {
-    if (name == null) {
-      name = ''
+    FarmConfig createFarm() {
+        new FarmConfig()
     }
-    def f = farmsMap_[name]
-    if (f == null) {
-      f = farmsMap_[name] = createFarm()
-    }
-    closure.delegate = f
-    closure.resolveStrategy = Closure.DELEGATE_FIRST
-    closure()
-  }
 
-  Map getFarmsMap() {
-    farmsMap_.asImmutable()
-  }
+    void farm(String name = null, Closure closure) {
+        if (name == null) {
+            name = ''
+        }
+        def f = farmsMap_[name]
+        if (f == null) {
+            f = farmsMap_[name] = createFarm()
+        }
+        closure.delegate = f
+        closure.resolveStrategy = Closure.DELEGATE_FIRST
+        closure()
+    }
+
+    Map getFarmsMap() {
+        farmsMap_.asImmutable()
+    }
 }

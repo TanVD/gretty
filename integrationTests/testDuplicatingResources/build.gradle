@@ -3,16 +3,16 @@ apply plugin: 'org.gretty'
 apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 
 dependencies {
-  compile 'io.reactivex:rxjava:1.1.5'
+    compile 'io.reactivex:rxjava:1.1.5'
 }
 
 ext {
-  integrationTestContainers = ['tomcat85', 'tomcat9']
+    integrationTestContainers = ['tomcat85', 'tomcat9']
 }
 
 gretty {
-  servletContainer = 'tomcat9'
-  contextPath = '/bug'
+    servletContainer = 'tomcat9'
+    contextPath = '/bug'
 }
 
 defineIntegrationTest()

@@ -1,9 +1,9 @@
 apply from: rootProject.file('common.gradle')
 
 dependencies {
-  compile project(':libs:gretty-core')
+    compile project(':libs:gretty-core')
 }
 
 jar {
-  manifest { attributes 'Main-Class': 'org.akhikhl.gretty.GrettyStarter' }
+    manifest { attributes 'Main-Class': 'org.akhikhl.gretty.GrettyStarter' }
 }

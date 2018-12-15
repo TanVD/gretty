@@ -3,15 +3,15 @@ apply plugin: 'org.gretty'
 apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 
 dependencies {
-  compile 'org.webjars:bootstrap:3.2.0'
-  compile 'org.webjars:jquery:2.1.1'
-  // We use Velocity for example of template processing within the webapp.
-  compile 'org.apache.velocity:velocity:1.7'
+    compile 'org.webjars:bootstrap:3.2.0'
+    compile 'org.webjars:jquery:2.1.1'
+    // We use Velocity for example of template processing within the webapp.
+    compile 'org.apache.velocity:velocity:1.7'
 }
 
 gretty {
-  servletContainer = 'tomcat9'
-  // httpsEnabled = true
+    servletContainer = 'tomcat9'
+    // httpsEnabled = true
 }
 
 defineIntegrationTest()

@@ -14,8 +14,8 @@ package org.akhikhl.gretty
  */
 interface StartConfig {
 
-  ServerConfig getServerConfig()
+    ServerConfig getServerConfig()
 
-  Iterable<WebAppConfig> getWebAppConfigs()
+    Iterable<WebAppConfig> getWebAppConfigs()
 }
 
