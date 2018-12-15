@@ -51,14 +51,14 @@ class FarmStartTask extends StartBaseTask {
 
     List<WebAppConfig> wconfigs = []
     configurer.resolveWebAppRefs(farmName, tempFarm.webAppRefs, wconfigs, inplace, inplaceMode)
-    for(WebAppConfig wconfig in wconfigs) {
+    for (WebAppConfig wconfig in wconfigs) {
       doPrepareWebAppConfig(wconfig)
 
-      if(wconfig.inplace && wconfig.inplaceMode == 'hard') {
-          logger.warn("You\'re running webapp (${wconfig.projectPath}) in hard inplaceMode: Overlay and filtering features of gretty will be disabled!")
+      if (wconfig.inplace && wconfig.inplaceMode == 'hard') {
+        logger.warn("You\'re running webapp (${wconfig.projectPath}) in hard inplaceMode: Overlay and filtering features of gretty will be disabled!")
       }
 
-      if(wconfig.webXml) {
+      if (wconfig.webXml) {
         logger.warn('You\'ve configured gretty to use the web.xml file located at ' + wconfig.webXml + '.')
       }
     }
@@ -87,8 +87,9 @@ class FarmStartTask extends StartBaseTask {
     Map wrefs = [:]
     FarmConfigurer.mergeWebAppRefMaps(wrefs, webAppRefs)
     FarmConfigurer.mergeWebAppRefMaps(wrefs, configurer.getProjectFarm(farmName).webAppRefs)
-    if(!wrefs && !configurer.getProjectFarm(farmName).includes)
+    if (!wrefs && !configurer.getProjectFarm(farmName).includes) {
       wrefs = configurer.getDefaultWebAppRefMap()
+    }
     configurer.getWebAppConfigsForProjects(wrefs, inplace, inplaceMode)
   }
 
@@ -97,20 +98,23 @@ class FarmStartTask extends StartBaseTask {
     Map wrefs = [:]
     FarmConfigurer.mergeWebAppRefMaps(wrefs, webAppRefs)
     FarmConfigurer.mergeWebAppRefMaps(wrefs, configurer.getProjectFarm(farmName).webAppRefs)
-    if(!wrefs && !configurer.getProjectFarm(farmName).includes)
+    if (!wrefs && !configurer.getProjectFarm(farmName).includes) {
       wrefs = configurer.getDefaultWebAppRefMap()
+    }
     configurer.getWebAppProjects(wrefs)
   }
 
   void integrationTestProject(Object project) {
-    if(project instanceof Project)
+    if (project instanceof Project) {
       project = project.path
+    }
     integrationTestProjects.add(project)
   }
 
   void webapp(Map options = [:], w) {
-    if(w instanceof Project)
+    if (w instanceof Project) {
       w = w.path
+    }
     webAppRefs[w] = options
   }
 

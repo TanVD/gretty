@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 class JettyStopTask extends AppStopTask {
 
   protected static final Logger log = LoggerFactory.getLogger(JettyBeforeIntegrationTestTask)
-	
+
   JettyStopTask() {
     doFirst {
       log.warn 'JettyStopTask is deprecated and will be removed in Gretty 2.0. Please use AppStopTask instead.'

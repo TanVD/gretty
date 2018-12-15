@@ -9,17 +9,17 @@
 package org.akhikhl.gretty
 
 import org.apache.tomcat.Jar
-
-import javax.servlet.ServletContext
 import org.apache.tomcat.JarScanFilter
+import org.apache.tomcat.JarScanType
 import org.apache.tomcat.JarScanner
 import org.apache.tomcat.JarScannerCallback
+import org.apache.tomcat.util.file.Matcher
 import org.apache.tomcat.util.scan.StandardJarScanFilter
 import org.apache.tomcat.util.scan.StandardJarScanner
-import org.apache.tomcat.JarScanType
-import org.apache.tomcat.util.file.Matcher;
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import javax.servlet.ServletContext
 
 /**
  *
@@ -29,20 +29,21 @@ class SkipPatternJarScanner extends StandardJarScanner {
 
   private static final Logger log = LoggerFactory.getLogger(SkipPatternJarScanner)
 
-	protected final JarScanner jarScanner
-	protected final JarSkipPatterns skipPatterns
+  protected final JarScanner jarScanner
+  protected final JarSkipPatterns skipPatterns
 
-	SkipPatternJarScanner(JarScanner jarScanner, JarSkipPatterns skipPatterns) {
-		assert jarScanner != null
-		this.jarScanner = jarScanner
-		this.skipPatterns = skipPatterns
+  SkipPatternJarScanner(JarScanner jarScanner, JarSkipPatterns skipPatterns) {
+    assert jarScanner != null
+    this.jarScanner = jarScanner
+    this.skipPatterns = skipPatterns
     setJarScanFilter(new StandardJarScanFilter())
-	}
+  }
 
   protected JarScannerCallback augmentCallback(final JarScannerCallback callback) {
 
-    if(!log.isDebugEnabled())
+    if (!log.isDebugEnabled()) {
       return callback
+    }
 
     return new JarScannerCallback() {
 
@@ -76,10 +77,10 @@ class SkipPatternJarScanner extends StandardJarScanner {
     jarScanner.setJarScanFilter(new TomcatJarScanFilter(newFilter))
   }
 
-	@Override
+  @Override
   public void scan(JarScanType scanType, ServletContext context, JarScannerCallback callback) {
-		jarScanner.scan(scanType, context, augmentCallback(callback))
-	}
+    jarScanner.scan(scanType, context, augmentCallback(callback))
+  }
 
   private class TomcatJarScanFilter implements JarScanFilter {
 

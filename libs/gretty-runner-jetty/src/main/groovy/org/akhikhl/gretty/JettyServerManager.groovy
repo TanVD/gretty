@@ -24,7 +24,7 @@ final class JettyServerManager implements ServerManager {
 
   private JettyConfigurer configurer
   protected Map params
-	protected server
+  protected server
 
   JettyServerManager(JettyConfigurer configurer) {
     this.configurer = configurer
@@ -47,13 +47,14 @@ final class JettyServerManager implements ServerManager {
     try {
       server.start()
       result = true
-    } catch(Throwable x) {
+    } catch (Throwable x) {
       log.error 'Error starting server', x
-      if(x.getClass().getName() == 'org.eclipse.jetty.util.MultiException') {
-        for(Throwable xx in x.getThrowables())
+      if (x.getClass().getName() == 'org.eclipse.jetty.util.MultiException') {
+        for (Throwable xx in x.getThrowables()) {
           log.error 'Error', xx
+        }
       }
-      if(startEvent) {
+      if (startEvent) {
         Map startInfo = new JettyServerStartInfo().getInfo(server, configurer, params)
         startInfo.status = 'error starting server'
         startInfo.error = true
@@ -62,12 +63,13 @@ final class JettyServerManager implements ServerManager {
         x.printStackTrace(new PrintWriter(sw))
         startInfo.stackTrace = sw.toString()
         startEvent.onServerStart(startInfo)
-      } else
+      } else {
         throw x
+      }
     }
 
-    if(result) {
-      if(startEvent) {
+    if (result) {
+      if (startEvent) {
         Map startInfo = new JettyServerStartInfo().getInfo(server, configurer, params)
         startEvent.onServerStart(startInfo)
       }
@@ -81,7 +83,7 @@ final class JettyServerManager implements ServerManager {
 
   @Override
   void stopServer() {
-    if(server != null) {
+    if (server != null) {
       log.debug '{} stopping.', params.servletContainerDescription
       server.stop()
       server = null

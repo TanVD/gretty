@@ -15,16 +15,16 @@ class RequestResponseIT extends GebReportingSpec {
   }
 
   def 'should get expected static page'() {
-  setup:
+    setup:
     go "http://${host}:${port}${contextPath}/index.html"
-  expect:
+    expect:
     $('h1').text() == 'spring-boot websocket'
   }
 
   def 'should get expected response from websocket server'() {
-  setup:
+    setup:
     go "http://${host}:${port}${contextPath}/index.html"
-  expect:
+    expect:
     $('#connect').click()
     waitFor { $('#conversationDiv').displayed }
     $('#name').value('John')

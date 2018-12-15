@@ -32,20 +32,23 @@ class WebInfConfigurationEx extends WebInfConfiguration implements BaseResourceC
   }
 
   @Override
-  public void unpack (WebAppContext context) throws IOException {
+  public void unpack(WebAppContext context) throws IOException {
     super.unpack(context)
-    if(extraResourceBases) {
+    if (extraResourceBases) {
       Resource res = context.getBaseResource()
       List resources = []
-      if(res instanceof ResourceCollection)
+      if (res instanceof ResourceCollection) {
         resources.addAll(res.getResources())
-      else
+      } else {
         resources.add(res)
-      for(def e in extraResourceBases)
+      }
+      for (def e in extraResourceBases) {
         resources.add(Resource.newResource(e))
+      }
       context.setBaseResource(new ResourceCollection(resources as Resource[]))
     }
-    for(Closure closure in baseResourceListeners)
+    for (Closure closure in baseResourceListeners) {
       closure(context)
+    }
   }
 }

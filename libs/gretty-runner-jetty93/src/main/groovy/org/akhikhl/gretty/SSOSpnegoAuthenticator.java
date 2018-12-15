@@ -27,7 +27,6 @@ import javax.servlet.http.HttpSession;
 import static org.eclipse.jetty.security.authentication.FormAuthenticator.*;
 
 /**
- *
  * @author akhikhl
  */
 public class SSOSpnegoAuthenticator extends SpnegoAuthenticator {
@@ -38,31 +37,29 @@ public class SSOSpnegoAuthenticator extends SpnegoAuthenticator {
     }
 
     public SSOSpnegoAuthenticator(String authMethod) {
-      super(authMethod);
+        super(authMethod);
     }
 
     // "login" is copied without changes from FormAuthenticator
     @Override
-    public UserIdentity login(String username, Object password, ServletRequest request)
-    {
+    public UserIdentity login(String username, Object password, ServletRequest request) {
 
-        UserIdentity user = super.login(username,password,request);
-        if (user!=null)
-        {
-            HttpSession session = ((HttpServletRequest)request).getSession(true);
-            Authentication cached=new SessionAuthentication(getAuthMethod(),user,password);
+        UserIdentity user = super.login(username, password, request);
+        if (user != null) {
+            HttpSession session = ((HttpServletRequest) request).getSession(true);
+            Authentication cached = new SessionAuthentication(getAuthMethod(), user, password);
             session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
         }
         return user;
     }
 
     @Override
-    public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory) throws ServerAuthException
-    {
-        HttpServletRequest request = (HttpServletRequest)req;
+    public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory) throws ServerAuthException {
+        HttpServletRequest request = (HttpServletRequest) req;
 
-        if (!mandatory)
+        if (!mandatory) {
             return new DeferredAuthentication(this);
+        }
 
         // ++ copied from FormAuthenticator
 
@@ -70,36 +67,29 @@ public class SSOSpnegoAuthenticator extends SpnegoAuthenticator {
 
         // Look for cached authentication
         Authentication authentication = (Authentication) session.getAttribute(SessionAuthentication.__J_AUTHENTICATED);
-        if (authentication != null)
-        {
+        if (authentication != null) {
             // Has authentication been revoked?
             if (authentication instanceof Authentication.User &&
-                _loginService!=null &&
-                !_loginService.validate(((Authentication.User)authentication).getUserIdentity()))
-            {
-                LOG.debug("auth revoked {}",authentication);
+                    _loginService != null &&
+                    !_loginService.validate(((Authentication.User) authentication).getUserIdentity())) {
+                LOG.debug("auth revoked {}", authentication);
                 session.removeAttribute(SessionAuthentication.__J_AUTHENTICATED);
-            }
-            else
-            {
-                synchronized (session)
-                {
-                    String j_uri=(String)session.getAttribute(__J_URI);
-                    if (j_uri!=null)
-                    {
+            } else {
+                synchronized (session) {
+                    String j_uri = (String) session.getAttribute(__J_URI);
+                    if (j_uri != null) {
                         //check if the request is for the same url as the original and restore
                         //params if it was a post
-                        LOG.debug("auth retry {}->{}",authentication,j_uri);
+                        LOG.debug("auth retry {}->{}", authentication, j_uri);
                         StringBuffer buf = request.getRequestURL();
-                        if (request.getQueryString() != null)
+                        if (request.getQueryString() != null) {
                             buf.append("?").append(request.getQueryString());
+                        }
 
-                        if (j_uri.equals(buf.toString()))
-                        {
-                            MultiMap<String> j_post = (MultiMap<String>)session.getAttribute(__J_POST);
-                            if (j_post!=null)
-                            {
-                                LOG.debug("auth rePOST {}->{}",authentication,j_uri);
+                        if (j_uri.equals(buf.toString())) {
+                            MultiMap<String> j_post = (MultiMap<String>) session.getAttribute(__J_POST);
+                            if (j_post != null) {
+                                LOG.debug("auth rePOST {}->{}", authentication, j_uri);
                                 Request base_request = Request.getBaseRequest(request);
                                 base_request.setContentParameters(j_post);
                             }
@@ -109,7 +99,7 @@ public class SSOSpnegoAuthenticator extends SpnegoAuthenticator {
                         }
                     }
                 }
-                LOG.debug("auth {}",authentication);
+                LOG.debug("auth {}", authentication);
                 return authentication;
             }
         }

@@ -13,6 +13,7 @@ import groovy.transform.TypeCheckingMode
 import org.gradle.process.JavaForkOptions
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 /**
  *
  * @author akhikhl
@@ -28,7 +29,7 @@ class AppBeforeIntegrationTestTask extends AppStartTask {
   AppBeforeIntegrationTestTask() {
     scanInterval = 0 // disable scanning on integration tests
   }
-  
+
   @Override
   protected boolean getDefaultJacocoEnabled() {
     true
@@ -54,23 +55,25 @@ class AppBeforeIntegrationTestTask extends AppStartTask {
   }
 
   void integrationTestTask(String integrationTestTask) {
-    if(integrationTestTaskAssigned) {
+    if (integrationTestTaskAssigned) {
       log.warn '{}.integrationTestTask is already set to "{}", so "{}" is ignored', name, getIntegrationTestTask(), integrationTestTask
       return
     }
     integrationTestTask_ = integrationTestTask
     def thisTask = this
     project.tasks.all { t ->
-      if(t.name == thisTask.integrationTestTask) {
+      if (t.name == thisTask.integrationTestTask) {
         t.dependsOn thisTask
         thisTask.dependsOn { project.tasks.prepareInplaceWebApp }
         thisTask.dependsOn { project.tasks.testClasses }
-        if(t.name != 'test' && project.tasks.findByName('test'))
+        if (t.name != 'test' && project.tasks.findByName('test')) {
           thisTask.mustRunAfter { project.tasks.test }
-        if(GradleUtils.instanceOf(t, 'org.gradle.process.JavaForkOptions')) {
+        }
+        if (GradleUtils.instanceOf(t, 'org.gradle.process.JavaForkOptions')) {
           t.doFirst {
-            if(thisTask.didWork)
+            if (thisTask.didWork) {
               passSystemPropertiesToIntegrationTask(t)
+            }
           }
         }
       }
@@ -85,13 +88,14 @@ class AppBeforeIntegrationTestTask extends AppStartTask {
     task.systemProperty 'gretty.host', host
 
     def contextPath
-    if(task.hasProperty('contextPath') && task.contextPath != null) {
+    if (task.hasProperty('contextPath') && task.contextPath != null) {
       contextPath = task.contextPath
-      if(!contextPath.startsWith('/'))
+      if (!contextPath.startsWith('/')) {
         contextPath = '/' + contextPath
-    }
-    else if(serverStartInfo.contexts)
+      }
+    } else if (serverStartInfo.contexts) {
       contextPath = serverStartInfo.contexts[0].contextPath
+    }
 
     task.systemProperty 'gretty.contextPath', contextPath
 
@@ -100,7 +104,7 @@ class AppBeforeIntegrationTestTask extends AppStartTask {
 
     def httpPort = serverStartInfo.httpPort
     String httpBaseURI
-    if(httpPort) {
+    if (httpPort) {
       task.systemProperty 'gretty.port', httpPort
       task.systemProperty 'gretty.httpPort', httpPort
       httpBaseURI = "http://${host}:${httpPort}${contextPath}"
@@ -112,7 +116,7 @@ class AppBeforeIntegrationTestTask extends AppStartTask {
 
     def httpsPort = serverStartInfo.httpsPort
     String httpsBaseURI
-    if(httpsPort) {
+    if (httpsPort) {
       task.systemProperty 'gretty.httpsPort', httpsPort
       httpsBaseURI = "https://${host}:${httpsPort}${contextPath}"
       task.systemProperty 'gretty.httpsBaseURI', httpsBaseURI
@@ -120,9 +124,11 @@ class AppBeforeIntegrationTestTask extends AppStartTask {
       preferredBaseURI = httpsBaseURI
     }
 
-    if(preferredProtocol)
+    if (preferredProtocol) {
       task.systemProperty 'gretty.preferredProtocol', preferredProtocol
-    if(preferredBaseURI)
+    }
+    if (preferredBaseURI) {
       task.systemProperty 'gretty.preferredBaseURI', preferredBaseURI
+    }
   }
 }

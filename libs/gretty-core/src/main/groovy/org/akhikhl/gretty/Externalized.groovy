@@ -18,8 +18,8 @@ class Externalized {
 
   private static PropertiesConfiguration config
 
-	static String getString(String key) {
-    if(config == null) {
+  static String getString(String key) {
+    if (config == null) {
       config = new PropertiesConfiguration()
       URLConnection resConn = Externalized.getResource('Externalized.properties').openConnection()
       // this fixes exceptions when reloading classes in running application

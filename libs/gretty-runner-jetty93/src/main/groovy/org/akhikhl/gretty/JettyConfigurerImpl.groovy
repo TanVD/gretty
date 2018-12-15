@@ -14,7 +14,14 @@ import org.eclipse.jetty.annotations.AnnotationConfiguration
 import org.eclipse.jetty.plus.webapp.EnvConfiguration
 import org.eclipse.jetty.plus.webapp.PlusConfiguration
 import org.eclipse.jetty.security.HashLoginService
-import org.eclipse.jetty.server.*
+import org.eclipse.jetty.server.Connector
+import org.eclipse.jetty.server.Handler
+import org.eclipse.jetty.server.HttpConfiguration
+import org.eclipse.jetty.server.HttpConnectionFactory
+import org.eclipse.jetty.server.SecureRequestCustomizer
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.ServerConnector
+import org.eclipse.jetty.server.SslConnectionFactory
 import org.eclipse.jetty.server.handler.ContextHandlerCollection
 import org.eclipse.jetty.server.session.HashSessionManager
 import org.eclipse.jetty.util.component.LifeCycle
@@ -22,7 +29,11 @@ import org.eclipse.jetty.util.resource.FileResource
 import org.eclipse.jetty.util.resource.Resource
 import org.eclipse.jetty.util.resource.ResourceCollection
 import org.eclipse.jetty.util.ssl.SslContextFactory
-import org.eclipse.jetty.webapp.*
+import org.eclipse.jetty.webapp.Configuration
+import org.eclipse.jetty.webapp.FragmentConfiguration
+import org.eclipse.jetty.webapp.JettyWebXmlConfiguration
+import org.eclipse.jetty.webapp.MetaInfConfiguration
+import org.eclipse.jetty.webapp.WebXmlConfiguration
 import org.eclipse.jetty.xml.XmlConfiguration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,7 +59,7 @@ class JettyConfigurerImpl implements JettyConfigurer {
 
   @Override
   void applyContextConfigFile(webAppContext, URL contextConfigFile) {
-    if(contextConfigFile) {
+    if (contextConfigFile) {
       log.info 'Configuring {} with {}', webAppContext.contextPath, contextConfigFile
       XmlConfiguration xmlConfiguration = new XmlConfiguration(contextConfigFile)
       xmlConfiguration.configure(webAppContext)
@@ -57,7 +68,7 @@ class JettyConfigurerImpl implements JettyConfigurer {
 
   @Override
   void applyJettyXml(server, String jettyXml) {
-    if(jettyXml != null) {
+    if (jettyXml != null) {
       log.info 'Configuring server with {}', jettyXml
       XmlConfiguration xmlConfiguration = new XmlConfiguration(new File(jettyXml).toURI().toURL())
       xmlConfiguration.configure(server)
@@ -68,7 +79,7 @@ class JettyConfigurerImpl implements JettyConfigurer {
   void configureConnectors(server, Map params) {
 
     HttpConfiguration http_config = new HttpConfiguration()
-    if(params.httpsPort) {
+    if (params.httpsPort) {
       http_config.setSecureScheme('https')
       http_config.setSecurePort(params.httpsPort)
     }
@@ -76,100 +87,117 @@ class JettyConfigurerImpl implements JettyConfigurer {
     Connector httpConn = findHttpConnector(server)
 
     boolean newHttpConnector = false
-    if(params.httpEnabled && !httpConn) {
+    if (params.httpEnabled && !httpConn) {
       newHttpConnector = true
       httpConn = new ServerConnector(server, new HttpConnectionFactory(http_config))
       httpConn.soLingerTime = -1
     }
 
-    if(httpConn) {
-      if(!httpConn.host)
+    if (httpConn) {
+      if (!httpConn.host) {
         httpConn.host = params.host ?: ServerDefaults.defaultHost
+      }
 
-      if(!httpConn.port)
+      if (!httpConn.port) {
         httpConn.port = params.httpPort ?: ServerDefaults.defaultHttpPort
+      }
 
-      if(httpConn.port == PortUtils.RANDOM_FREE_PORT)
+      if (httpConn.port == PortUtils.RANDOM_FREE_PORT) {
         httpConn.port = PortUtils.findFreePort()
+      }
 
-      if(params.httpIdleTimeout)
+      if (params.httpIdleTimeout) {
         httpConn.idleTimeout = params.httpIdleTimeout
+      }
 
-      if(newHttpConnector)
+      if (newHttpConnector) {
         server.addConnector(httpConn)
+      }
     }
 
     Connector httpsConn = findHttpsConnector(server)
 
     boolean newHttpsConnector = false
-    if(params.httpsEnabled && !httpsConn) {
+    if (params.httpsEnabled && !httpsConn) {
       newHttpsConnector = true
       HttpConfiguration https_config = new HttpConfiguration(http_config)
       https_config.addCustomizer(new SecureRequestCustomizer())
       httpsConn = new ServerConnector(server,
-        new SslConnectionFactory(new SslContextFactory(), 'http/1.1'),
-        new HttpConnectionFactory(https_config))
+              new SslConnectionFactory(new SslContextFactory(), 'http/1.1'),
+              new HttpConnectionFactory(https_config))
       httpsConn.soLingerTime = -1
     }
 
-    if(httpsConn) {
-      if(!httpsConn.host)
+    if (httpsConn) {
+      if (!httpsConn.host) {
         httpsConn.host = params.host ?: ServerDefaults.defaultHost
-
-      if(!httpsConn.port)
-        httpsConn.port = params.httpsPort ?: ServerDefaults.defaultHttpsPort
-
-      if(httpsConn.port == PortUtils.RANDOM_FREE_PORT)
-        httpsConn.port = PortUtils.findFreePort()
-
-      def sslContextFactory = httpsConn.getConnectionFactories().find { it instanceof SslConnectionFactory }?.getSslContextFactory()
-      if(sslContextFactory) {
-        if(params.sslKeyStorePath) {
-          if(params.sslKeyStorePath.startsWith('classpath:')) {
-            String resString = params.sslKeyStorePath - 'classpath:'
-            URL url = getClass().getResource(resString)
-            if(url == null)
-              throw new Exception("Could not resource referenced in sslKeyStorePath: '${resString}'")
-            sslContextFactory.setKeyStoreResource(new FileResource(url))
-          }
-          else
-            sslContextFactory.setKeyStorePath(params.sslKeyStorePath)
-        }
-        if(params.sslKeyStorePassword)
-          sslContextFactory.setKeyStorePassword(params.sslKeyStorePassword)
-        if(params.sslKeyManagerPassword)
-          sslContextFactory.setKeyManagerPassword(params.sslKeyManagerPassword)
-        if(params.sslTrustStorePath) {
-          if(params.sslTrustStorePath.startsWith('classpath:')) {
-            String resString = params.sslTrustStorePath - 'classpath:'
-            URL url = getClass().getResource(resString)
-            if(url == null)
-              throw new Exception("Could not resource referenced in sslTrustStorePath: '${resString}'")
-            sslContextFactory.setTrustStoreResource(new FileResource(url))
-          }
-          else
-            sslContextFactory.setTrustStorePath(params.sslTrustStorePath)
-        }
-        if(params.sslTrustStorePassword)
-          sslContextFactory.setTrustStorePassword(params.sslTrustStorePassword)
-        if(params.sslNeedClientAuth)
-          sslContextFactory.setNeedClientAuth(params.sslNeedClientAuth)
       }
 
-      if(params.httpsIdleTimeout)
-        httpsConn.idleTimeout = params.httpsIdleTimeout
+      if (!httpsConn.port) {
+        httpsConn.port = params.httpsPort ?: ServerDefaults.defaultHttpsPort
+      }
 
-      if(newHttpsConnector)
+      if (httpsConn.port == PortUtils.RANDOM_FREE_PORT) {
+        httpsConn.port = PortUtils.findFreePort()
+      }
+
+      def sslContextFactory = httpsConn.getConnectionFactories().find { it instanceof SslConnectionFactory }?.getSslContextFactory()
+      if (sslContextFactory) {
+        if (params.sslKeyStorePath) {
+          if (params.sslKeyStorePath.startsWith('classpath:')) {
+            String resString = params.sslKeyStorePath - 'classpath:'
+            URL url = getClass().getResource(resString)
+            if (url == null) {
+              throw new Exception("Could not resource referenced in sslKeyStorePath: '${resString}'")
+            }
+            sslContextFactory.setKeyStoreResource(new FileResource(url))
+          } else {
+            sslContextFactory.setKeyStorePath(params.sslKeyStorePath)
+          }
+        }
+        if (params.sslKeyStorePassword) {
+          sslContextFactory.setKeyStorePassword(params.sslKeyStorePassword)
+        }
+        if (params.sslKeyManagerPassword) {
+          sslContextFactory.setKeyManagerPassword(params.sslKeyManagerPassword)
+        }
+        if (params.sslTrustStorePath) {
+          if (params.sslTrustStorePath.startsWith('classpath:')) {
+            String resString = params.sslTrustStorePath - 'classpath:'
+            URL url = getClass().getResource(resString)
+            if (url == null) {
+              throw new Exception("Could not resource referenced in sslTrustStorePath: '${resString}'")
+            }
+            sslContextFactory.setTrustStoreResource(new FileResource(url))
+          } else {
+            sslContextFactory.setTrustStorePath(params.sslTrustStorePath)
+          }
+        }
+        if (params.sslTrustStorePassword) {
+          sslContextFactory.setTrustStorePassword(params.sslTrustStorePassword)
+        }
+        if (params.sslNeedClientAuth) {
+          sslContextFactory.setNeedClientAuth(params.sslNeedClientAuth)
+        }
+      }
+
+      if (params.httpsIdleTimeout) {
+        httpsConn.idleTimeout = params.httpsIdleTimeout
+      }
+
+      if (newHttpsConnector) {
         server.addConnector(httpsConn)
+      }
     }
   }
 
   @Override
   void configureSecurity(context, String realm, String realmConfigFile, boolean singleSignOn) {
     context.securityHandler.loginService = new HashLoginService(realm, realmConfigFile)
-    if(singleSignOn) {
-      if(ssoAuthenticatorFactory == null)
+    if (singleSignOn) {
+      if (ssoAuthenticatorFactory == null) {
         ssoAuthenticatorFactory = new SSOAuthenticatorFactory()
+      }
       context.securityHandler.authenticatorFactory = ssoAuthenticatorFactory
     }
   }
@@ -177,9 +205,9 @@ class JettyConfigurerImpl implements JettyConfigurer {
   @Override
   void configureSessionManager(server, context, Map serverParams, Map webappParams) {
     HashSessionManager sessionManager
-    if(serverParams.singleSignOn) {
+    if (serverParams.singleSignOn) {
       sessionManager = sharedSessionManager
-      if(sessionManager == null) {
+      if (sessionManager == null) {
         sessionManager = sharedSessionManager = new HashSessionManager()
         sessionManager.setMaxInactiveInterval(60 * 30) // 30 minutes
         sessionManager.getSessionCookieConfig().setPath('/')
@@ -243,26 +271,28 @@ class JettyConfigurerImpl implements JettyConfigurer {
   @Override
   URL findResourceURL(baseResource, String path) {
     Resource res
-    if(baseResource instanceof ResourceCollection)
+    if (baseResource instanceof ResourceCollection) {
       res = baseResource.findResource(path)
-    else
+    } else {
       res = baseResource.addPath(path)
-    if(res.exists())
+    }
+    if (res.exists()) {
       return res.getURL()
+    }
     null
   }
 
   @Override
   List getConfigurations(Map webappParams) {
     [
-      new WebInfConfigurationEx(),
-      new WebXmlConfiguration(),
-      new MetaInfConfiguration(),
-      new FragmentConfiguration(),
-      new EnvConfiguration(),
-      new PlusConfiguration(),
-      new AnnotationConfiguration(),
-      new JettyWebXmlConfiguration()
+            new WebInfConfigurationEx(),
+            new WebXmlConfiguration(),
+            new MetaInfConfiguration(),
+            new FragmentConfiguration(),
+            new EnvConfiguration(),
+            new PlusConfiguration(),
+            new AnnotationConfiguration(),
+            new JettyWebXmlConfiguration()
     ]
   }
 
@@ -277,29 +307,33 @@ class JettyConfigurerImpl implements JettyConfigurer {
   }
 
   private ContextHandlerCollection findContextHandlerCollection(Handler handler) {
-    if(handler instanceof ContextHandlerCollection)
+    if (handler instanceof ContextHandlerCollection) {
       return handler
-    if(handler.respondsTo('getHandlers'))
+    }
+    if (handler.respondsTo('getHandlers')) {
       return handler.getHandlers().findResult { findContextHandlerCollection(it) }
+    }
     null
   }
 
   @Override
   void setHandlersToServer(server, List handlers) {
     ContextHandlerCollection contexts = findContextHandlerCollection(server.handler)
-    if(!contexts)
+    if (!contexts) {
       contexts = new ContextHandlerCollection()
+    }
 
     contexts.setHandlers(handlers as Handler[])
-    if(server.handler == null)
+    if (server.handler == null) {
       server.handler = contexts
+    }
   }
 
   @Override
   List getHandlersByContextPaths(server, List contextPaths) {
-    ContextHandlerCollection context = findContextHandlerCollection(((Server)server).handler)
+    ContextHandlerCollection context = findContextHandlerCollection(((Server) server).handler)
     return context.getHandlers().findAll {
-      if(it.respondsTo("getContextPath")) {
+      if (it.respondsTo("getContextPath")) {
         contextPaths.contains(it.getContextPath())
       }
     }

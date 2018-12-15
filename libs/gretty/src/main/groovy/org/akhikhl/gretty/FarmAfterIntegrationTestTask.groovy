@@ -35,7 +35,7 @@ class FarmAfterIntegrationTestTask extends FarmStopTask {
   @TaskAction
   void action() {
     super.action()
-    if(project.ext.has('grettyLaunchThread') && project.ext.grettyLaunchThread != null) {
+    if (project.ext.has('grettyLaunchThread') && project.ext.grettyLaunchThread != null) {
       project.ext.grettyLaunchThread.join()
       project.ext.grettyLaunchThread = null
       project.ext.grettyLauncher.afterLaunch()
@@ -66,19 +66,21 @@ class FarmAfterIntegrationTestTask extends FarmStopTask {
     Map wrefs = [:]
     FarmConfigurer.mergeWebAppRefMaps(wrefs, webAppRefs)
     FarmConfigurer.mergeWebAppRefMaps(wrefs, configurer.getProjectFarm(farmName).webAppRefs)
-    if(!wrefs && !configurer.getProjectFarm(farmName).includes)
+    if (!wrefs && !configurer.getProjectFarm(farmName).includes) {
       wrefs = configurer.getDefaultWebAppRefMap()
+    }
     configurer.getWebAppProjects(wrefs)
   }
 
   void integrationTestProject(Object project) {
-    if(project instanceof Project)
+    if (project instanceof Project) {
       project = project.path
+    }
     integrationTestProjects.add(project)
   }
 
   void integrationTestTask(String integrationTestTask) {
-    if(integrationTestTaskAssigned) {
+    if (integrationTestTaskAssigned) {
       log.warn '{}.integrationTestTask is already set to "{}", so "{}" is ignored', name, getIntegrationTestTask(), integrationTestTask
       return
     }
@@ -86,18 +88,20 @@ class FarmAfterIntegrationTestTask extends FarmStopTask {
     def thisTask = this
     getIntegrationTestProjects().each { proj ->
       proj.tasks.all { t ->
-        if(t.name == thisTask.integrationTestTask)
+        if (t.name == thisTask.integrationTestTask) {
           thisTask.mustRunAfter t
-        else if(GradleUtils.instanceOf(t, 'org.akhikhl.gretty.AppAfterIntegrationTestTask') && t.integrationTestTask == thisTask.integrationTestTask)
+        } else if (GradleUtils.instanceOf(t, 'org.akhikhl.gretty.AppAfterIntegrationTestTask') && t.integrationTestTask == thisTask.integrationTestTask) {
           thisTask.mustRunAfter t
+        }
       }
     }
     integrationTestTaskAssigned = true
   }
 
   void webapp(Map options = [:], w) {
-    if(w instanceof Project)
+    if (w instanceof Project) {
       w = w.path
+    }
     webAppRefs[w] = options
   }
 }

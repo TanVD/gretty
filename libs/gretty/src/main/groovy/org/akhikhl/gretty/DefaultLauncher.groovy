@@ -31,7 +31,7 @@ class DefaultLauncher extends LauncherBase {
 
   static Collection<URL> getRunnerClassPath(Project project, ServerConfig sconfig) {
     def files = project.configurations.grettyNoSpringBoot.files +
-        project.configurations[ServletContainerConfig.getConfig(sconfig.servletContainer).servletContainerRunnerConfig].files
+            project.configurations[ServletContainerConfig.getConfig(sconfig.servletContainer).servletContainerRunnerConfig].files
     (files.collect { it.toURI().toURL() }) as LinkedHashSet
   }
 
@@ -57,7 +57,7 @@ class DefaultLauncher extends LauncherBase {
     project.file("${project.buildDir}/gretty_ports")
     optionalLiveReloadServer?.startServer()
     //
-    if(optionalLiveReloadServer) {
+    if (optionalLiveReloadServer) {
       scannerManager?.registerFastReloadCallbacks((Closure) null, { -> optionalLiveReloadServer.triggerReload() })
       //
       Future response
@@ -92,12 +92,14 @@ class DefaultLauncher extends LauncherBase {
   protected void javaExec(JavaExecParams params) {
     project.javaexec { JavaExecSpec spec ->
       def runnerClasspath = getRunnerClassPath(project, sconfig)
-      if(log.isDebugEnabled())
-        for(def path in runnerClasspath)
+      if (log.isDebugEnabled()) {
+        for (def path in runnerClasspath) {
           log.debug 'Runner classpath: {}', path
+        }
+      }
       spec.classpath = project.files(runnerClasspath)
       def jvmArgs = params.jvmArgs
-      if(params.debug) {
+      if (params.debug) {
         jvmArgs.add '-Xdebug'
         String debugArg = "-Xrunjdwp:transport=dt_socket,server=y,suspend=${params.debugSuspend ? 'y' : 'n'},address=${params.debugPort}"
         jvmArgs.add debugArg
@@ -118,7 +120,7 @@ class DefaultLauncher extends LauncherBase {
   @Override
   protected void rebuildWebapps() {
     webAppConfigs.each { WebAppConfig wconfig ->
-      if(wconfig.projectPath) {
+      if (wconfig.projectPath) {
         def proj = project.project(wconfig.projectPath)
         ProjectConnection connection = GradleConnector.newConnector().useInstallation(proj.gradle.gradleHomeDir).forProjectDirectory(proj.projectDir).connect()
         try {

@@ -12,6 +12,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 /**
  *
  * @author akhikhl
@@ -32,8 +33,9 @@ class JettyServerConfigurer {
   protected void configureWithBaseResource(Map webapp, context) {
 
     URL contextConfigFile = getContextConfigFile(context.baseResource, params.servletContainerId)
-    if (!contextConfigFile && webapp.contextConfigFile)
+    if (!contextConfigFile && webapp.contextConfigFile) {
       contextConfigFile = new File(webapp.contextConfigFile).toURI().toURL()
+    }
     configurer.applyContextConfigFile(context, contextConfigFile)
 
     String realm = webapp.realm ?: params.realm
@@ -44,8 +46,7 @@ class JettyServerConfigurer {
     } else {
       if (webapp.realmConfigFile) {
         realmConfigFile = new File(webapp.realmConfigFile).canonicalFile
-      }
-      else if (params.realmConfigFile) {
+      } else if (params.realmConfigFile) {
         realmConfigFile = new File(params.realmConfigFile).canonicalFile
       }
     }
@@ -53,8 +54,9 @@ class JettyServerConfigurer {
       if (context.securityHandler.loginService == null) {
         log.info 'Configuring {} with realm \'{}\', {}', context.contextPath, realm, realmConfigFile
         configurer.configureSecurity(context, realm, realmConfigFile.toString(), params.singleSignOn ?: false)
-      } else
+      } else {
         log.warn 'loginService is already configured, ignoring realm \'{}\', {}', realm, realmConfigFile
+      }
     }
   }
 
@@ -71,7 +73,7 @@ class JettyServerConfigurer {
 
     List handlers = []
 
-    for(Map webapp in params.webApps) {
+    for (Map webapp in params.webApps) {
       def context = createContext(webapp, baseDir, server, configureContext)
       handlers.add(context)
     }
@@ -101,7 +103,9 @@ class JettyServerConfigurer {
     log.debug 'jetty context temp directory: {}', tempDir
     context.setTempDirectory(tempDir)
     if (context.respondsTo('setPersistTempDirectory')) // not supported on older jetty versions
+    {
       context.setPersistTempDirectory(true)
+    }
 
     webapp.initParams?.each { key, value ->
       context.setInitParameter(key, value)
@@ -109,10 +113,11 @@ class JettyServerConfigurer {
 
     File resourceFile = new File(webapp.resourceBase)
 
-    if (resourceFile.isDirectory())
+    if (resourceFile.isDirectory()) {
       context.setResourceBase(webapp.resourceBase)
-    else
+    } else {
       context.setWar(webapp.resourceBase)
+    }
 
     configurer.configureSessionManager(server, context, params, webapp)
 
@@ -129,9 +134,9 @@ class JettyServerConfigurer {
   }
 
   URL getContextConfigFile(baseResource, String servletContainer) {
-    for(def possibleFileName in [ servletContainer + '-env.xml', 'jetty-env.xml' ]) {
+    for (def possibleFileName in [servletContainer + '-env.xml', 'jetty-env.xml']) {
       URL url = configurer.findResourceURL(baseResource, 'META-INF/' + possibleFileName)
-      if(url) {
+      if (url) {
         log.info 'resolved {} to {}', possibleFileName, url
         return url
       }
@@ -140,10 +145,11 @@ class JettyServerConfigurer {
   }
 
   URL getRealmFile(baseResource, String servletContainer) {
-    for(def possibleFileName in [ servletContainer + '-realm.properties', 'jetty-realm.properties' ]) {
+    for (def possibleFileName in [servletContainer + '-realm.properties', 'jetty-realm.properties']) {
       URL url = configurer.findResourceURL(baseResource, 'META-INF/' + possibleFileName)
-      if(url)
+      if (url) {
         return url
+      }
     }
     null
   }

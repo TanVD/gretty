@@ -28,61 +28,65 @@ class ManagedDirectory {
     this.baseDir = baseDir
     addedDirs.add(baseDir)
   }
-  
+
   void add(File srcFile) {
     add(srcFile, null)
   }
-  
+
   void add(File srcFile, String dstSubDir) {
     File dstFile = dstSubDir ? new File(new File(baseDir, dstSubDir), srcFile.name) : new File(baseDir, srcFile.name)
     add_(srcFile, dstFile)
   }
-  
+
   private void add_(File srcFile, File dstFile) {
-    if(srcFile.isDirectory()) {
+    if (srcFile.isDirectory()) {
       dstFile.mkdirs()
       registerAdded(dstFile)
-      for(File f in srcFile.listFiles())
+      for (File f in srcFile.listFiles()) {
         add_(f, new File(dstFile, f.name))
+      }
     } else {
       dstFile.parentFile.mkdirs()
       FileUtils.copyFile(srcFile, dstFile)
       registerAdded(dstFile)
     }
   }
-  
+
   void cleanup() {
     cleanupFiles(baseDir)
   }
-  
+
   private void cleanupFiles(File dir) {
-    if(addedDirs.contains(dir)) {
-      for(File f in dir.listFiles()) {
-        if(f.isFile()) {
-          if(!addedFiles.contains(f)) {
+    if (addedDirs.contains(dir)) {
+      for (File f in dir.listFiles()) {
+        if (f.isFile()) {
+          if (!addedFiles.contains(f)) {
             log.debug 'deleting managed {}', f
             f.delete()
           }
-        } else
+        } else {
           cleanupFiles(f)
+        }
       }
     } else {
       log.debug 'deleting managed {}', dir
       dir.deleteDir()
     }
   }
-  
+
   void registerAdded(File f) {
-    if(f.isDirectory()) {
-      while(f != baseDir) {
-        if(addedDirs.add(f))
+    if (f.isDirectory()) {
+      while (f != baseDir) {
+        if (addedDirs.add(f)) {
           log.debug 'added managed {}', f
+        }
         f = f.parentFile
       }
     } else {
       registerAdded(f.parentFile)
-      if(addedFiles.add(f))
-        log.debug 'added managed {}', f      
+      if (addedFiles.add(f)) {
+        log.debug 'added managed {}', f
+      }
     }
   }
 }

@@ -41,8 +41,9 @@ abstract class AppServiceTask extends DefaultTask {
     ProjectUtils.resolveServerConfig(project, serverConfig)
     //
     File portPropertiesFile = DefaultLauncher.getPortPropertiesFile(project, serverConfig)
-    if(!portPropertiesFile.exists())
+    if (!portPropertiesFile.exists()) {
       throw new GradleException("Gretty seems to be not running, cannot send command '$command' to it.")
+    }
     Properties portProps = new Properties()
     portPropertiesFile.withReader 'UTF-8', {
       portProps.load(it)

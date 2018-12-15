@@ -23,7 +23,7 @@ configurations {
 }
 
 compileGroovy {
-	groovyOptions.configurationScript = file("${rootProject.projectDir}/gradle/config.groovy")
+  groovyOptions.configurationScript = file("${rootProject.projectDir}/gradle/config.groovy")
 }
 
 afterEvaluate {
@@ -45,7 +45,7 @@ afterEvaluate {
     dependsOn javadoc
     classifier = 'javadoc'
     from javadoc.destinationDir
-    if(tasks.findByName('groovydoc')) {
+    if (tasks.findByName('groovydoc')) {
       dependsOn groovydoc
       from groovydoc.destinationDir
     }
@@ -133,7 +133,7 @@ afterEvaluate {
       repo = thisProject.bintrayRepo
       name = thisProject.bintrayPackage
       desc = thisProject.description
-      licenses = [ thisProject.license ]
+      licenses = [thisProject.license]
       vcsUrl = thisProject.project_scm
       labels = thisProject.projectLabels.split(',')
       version {

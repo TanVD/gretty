@@ -46,14 +46,16 @@ class JavaExecParams {
   }
 
   void systemProperties(Map<String, String> m) {
-    if(systemProperties == null)
+    if (systemProperties == null) {
       systemProperties = [:]
+    }
     systemProperties << m
   }
 
   void systemProperty(String name, String value) {
-    if(systemProperties == null)
+    if (systemProperties == null) {
       systemProperties = [:]
+    }
     systemProperties[name] = value
   }
 }

@@ -6,6 +6,7 @@
  * See the file "LICENSE" for copying and usage permission.
  * See the file "CONTRIBUTORS" for complete list of contributors.
  */
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +18,7 @@ public class HelloServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         final Set<String> libs = getServletContext().getResourcePaths("/WEB-INF/lib");
-        if(libs == null || libs.isEmpty()) {
+        if (libs == null || libs.isEmpty()) {
             // Following output will be produced by Gretty
             resp.getOutputStream().print("<p>/WEB-INF/lib is empty</p>");
         } else {

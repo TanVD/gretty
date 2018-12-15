@@ -13,9 +13,12 @@ package org.akhikhl.gretty
  * @author akhikhl
  */
 interface ServerManager {
-	void setParams(Map params)
+  void setParams(Map params)
+
   void startServer(ServerStartEvent startEvent)
+
   void stopServer()
+
   void redeploy(List<String> webapps)
 }
 

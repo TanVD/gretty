@@ -13,7 +13,7 @@ package org.akhikhl.gretty
  * @author akhikhl
  */
 interface StartConfig {
-	
+
   ServerConfig getServerConfig()
 
   Iterable<WebAppConfig> getWebAppConfigs()

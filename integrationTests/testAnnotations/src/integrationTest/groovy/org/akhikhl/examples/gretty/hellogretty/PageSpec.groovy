@@ -19,9 +19,9 @@ class PageSpec extends GebReportingSpec {
   }
 
   def 'should get expected response from the server'() {
-  when:
+    when:
     go "${baseURI}/annotations/whatever"
-  then:
+    then:
     $('h1').text() == /Hello, world!/
   }
 }

@@ -44,7 +44,7 @@ final class Runner {
       smf longOpt: 'serverManagerFactory', required: true, args: 1, argName: 'serverManagerFactory', type: String, 'server manager factory'
     }
     def options = cli.parse(args)
-    Map params = [ servicePort: options.servicePort as int, statusPort: options.statusPort as int, serverManagerFactory: options.serverManagerFactory ]
+    Map params = [servicePort: options.servicePort as int, statusPort: options.statusPort as int, serverManagerFactory: options.serverManagerFactory]
     new Runner(params).run()
   }
 
@@ -52,21 +52,23 @@ final class Runner {
     LoggerContext logCtx = LoggerFactory.getILoggerFactory()
     logCtx.stop()
     Map loggerCache = LoggerFactory.getILoggerFactory().@loggerCache
-    for(String loggerName in new HashSet(loggerCache.keySet()))
-      if(!loggerName.startsWith('org.eclipse.jetty'))
+    for (String loggerName in new HashSet(loggerCache.keySet())) {
+      if (!loggerName.startsWith('org.eclipse.jetty')) {
         loggerCache.remove(loggerName)
+      }
+    }
     String logbackConfigText
-    if(serverParams.logbackConfigFile) {
-      if(serverParams.logbackConfigFile.endsWith('.xml')) {
+    if (serverParams.logbackConfigFile) {
+      if (serverParams.logbackConfigFile.endsWith('.xml')) {
         JoranConfigurator configurator = new JoranConfigurator();
         configurator.setContext(logCtx)
         configurator.doConfigure(new File(serverParams.logbackConfigFile))
         return
       }
       logbackConfigText = new File(serverParams.logbackConfigFile).getText('UTF-8')
-    }
-    else
+    } else {
       logbackConfigText = Runner.class.getResourceAsStream('/grettyRunnerLogback.groovy').getText('UTF-8')
+    }
     Binding binding = new Binding()
     binding.loggingLevel = stringToLoggingLevel(serverParams.loggingLevel)
     binding.consoleLogEnabled = Boolean.valueOf(serverParams.consoleLogEnabled == null ? true : serverParams.consoleLogEnabled)
@@ -77,7 +79,7 @@ final class Runner {
   }
 
   private static Level stringToLoggingLevel(String str) {
-    switch(str?.toUpperCase()) {
+    switch (str?.toUpperCase()) {
       case 'ALL':
         return Level.ALL
       case 'DEBUG':
@@ -110,13 +112,14 @@ final class Runner {
     ServerSocket socket = new ServerSocket(params.servicePort, 1, InetAddress.getByName('127.0.0.1'))
     try {
       ServiceProtocol.send(params.statusPort, 'init')
-      while(true) {
+      while (true) {
         def data = ServiceProtocol.readMessageFromServerSocket(socket)
-        if(!paramsLoaded) {
+        if (!paramsLoaded) {
           params << new JsonSlurper().parseText(data)
           paramsLoaded = true
-          if(!Boolean.valueOf(System.getProperty('grettyProduct')))
+          if (!Boolean.valueOf(System.getProperty('grettyProduct'))) {
             initLogback(params)
+          }
           serverManager.setParams(params)
           serverManager.startServer(new ServerStartEventImpl())
           // Note that server is already in listening state.
@@ -124,21 +127,18 @@ final class Runner {
           // the command is queued, so that socket.accept gets it anyway.
           continue
         }
-        if(data == 'status')
+        if (data == 'status') {
           ServiceProtocol.send(params.statusPort, 'started')
-        else if(data == 'stop') {
+        } else if (data == 'stop') {
           serverManager.stopServer()
           break
-        }
-        else if(data == 'restart') {
+        } else if (data == 'restart') {
           serverManager.stopServer()
           serverManager.startServer(null)
-        }
-        else if(data == 'restartWithEvent') {
+        } else if (data == 'restartWithEvent') {
           serverManager.stopServer()
           serverManager.startServer(new ServerStartEventImpl())
-        }
-        else if (data.startsWith('redeploy ')) {
+        } else if (data.startsWith('redeploy ')) {
           List<String> webappList = data.replace('redeploy ', '').split(' ').toList()
           serverManager.redeploy(webappList)
           ServiceProtocol.sendMayFail(params.statusPort, 'redeployed')

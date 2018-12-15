@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory
 class JettyBeforeIntegrationTestTask extends AppBeforeIntegrationTestTask {
 
   protected static final Logger log = LoggerFactory.getLogger(JettyBeforeIntegrationTestTask)
-	
+
   JettyBeforeIntegrationTestTask() {
     doFirst {
       log.warn 'JettyBeforeIntegrationTestTask is deprecated and will be removed in Gretty 2.0. Please use AppBeforeIntegrationTestTask instead.'

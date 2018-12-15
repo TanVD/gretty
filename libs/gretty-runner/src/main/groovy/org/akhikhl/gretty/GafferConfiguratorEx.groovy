@@ -8,15 +8,14 @@
  */
 package org.akhikhl.gretty
 
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.gaffer.ConfigurationDelegate
 import ch.qos.logback.classic.gaffer.GafferConfigurator
 import ch.qos.logback.core.status.OnConsoleStatusListener
 import ch.qos.logback.core.util.ContextUtil
 import ch.qos.logback.core.util.OptionHelper
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.control.CompilerConfiguration
 
 /**

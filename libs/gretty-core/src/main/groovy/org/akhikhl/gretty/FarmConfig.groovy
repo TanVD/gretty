@@ -26,12 +26,15 @@ class FarmConfig {
   FarmConfig(Map options) {
     serverConfig = options.serverConfig ?: new ServerConfig()
     webAppRefs_ = [:]
-    if(options.containsKey('webAppRefs'))
+    if (options.containsKey('webAppRefs')) {
       webAppRefs_ << (options.webAppRefs as Map)
-    if(options.containsKey('integrationTestProjects'))
+    }
+    if (options.containsKey('integrationTestProjects')) {
       integrationTestProjects_.addAll(options.integrationTestProjects as Collection)
-    if(options.containsKey('integrationTestProject'))
+    }
+    if (options.containsKey('integrationTestProject')) {
       integrationTestProjects_.add(options.integrationTestProject)
+    }
   }
 
   List getIntegrationTestProjects() {
@@ -59,7 +62,7 @@ class FarmConfig {
   }
 
   void setWebAppRefs(Map newValue) {
-    if(!webAppRefs_.is(newValue)) {
+    if (!webAppRefs_.is(newValue)) {
       webAppRefs_.clear()
       webAppRefs_ << newValue
     }

@@ -33,18 +33,20 @@ class FarmConfigurer {
 
   void configureFarm(FarmExtension dstFarm, FarmExtension[] srcFarms = []) {
     srcFarms = srcFarms.findAll()
-    ConfigUtils.complementProperties(dstFarm.serverConfig, srcFarms*.serverConfig + [ project.gretty.serverConfig, ProjectUtils.getDefaultServerConfig(project) ])
+    ConfigUtils.complementProperties(dstFarm.serverConfig, srcFarms*.serverConfig + [project.gretty.serverConfig, ProjectUtils.getDefaultServerConfig(project)])
     sconfig = dstFarm.serverConfig
     ProjectUtils.resolveServerConfig(project, dstFarm.serverConfig)
-    for(def f in srcFarms) {
+    for (def f in srcFarms) {
       mergeWebAppRefMaps(dstFarm.webAppRefs_, f.webAppRefs)
       dstFarm.integrationTestProjects_.addAll(f.integrationTestProjects)
       dstFarm.includes_.addAll(f.includes)
     }
-    if(!dstFarm.webAppRefs && !dstFarm.includes)
+    if (!dstFarm.webAppRefs && !dstFarm.includes) {
       dstFarm.webAppRefs = getDefaultWebAppRefMap()
-    if(dstFarm.integrationTestTask == null)
+    }
+    if (dstFarm.integrationTestTask == null) {
       dstFarm.integrationTestTask = srcFarms.findResult { it.integrationTestTask }
+    }
   }
 
   FarmExtension findProjectFarm(String sourceFarmName) {
@@ -56,8 +58,9 @@ class FarmConfigurer {
     project.subprojects.findAll { it.extensions.findByName('gretty') }.each { p ->
       result[p.path] = [:]
     }
-    if(!result && project.extensions.findByName('gretty'))
+    if (!result && project.extensions.findByName('gretty')) {
       result[project.path] = [:]
+    }
     result
   }
 
@@ -69,14 +72,15 @@ class FarmConfigurer {
 
   FarmExtension getProjectFarm(String sourceFarmName) {
     def sourceFarm = project.farms.farmsMap[sourceFarmName]
-    if(!sourceFarm)
+    if (!sourceFarm) {
       throw new GradleException("Farm '${sourceFarmName}' is not defined in project farms")
+    }
     sourceFarm
   }
 
   WebAppConfig getWebAppConfigForMavenDependency(Map options, String dependency, String farmName) {
     WebAppConfig wconfig = new WebAppConfig()
-    ConfigUtils.complementProperties(wconfig, options, ProjectUtils.getDefaultWebAppConfigForMavenDependency(project, farmName,  dependency, options.dependencies))
+    ConfigUtils.complementProperties(wconfig, options, ProjectUtils.getDefaultWebAppConfigForMavenDependency(project, farmName, dependency, options.dependencies))
     wconfig.inplace = false // always war-file, ignore options.inplace
     ProjectUtils.resolveWebAppConfig(null, wconfig, sconfig)
     wconfig
@@ -84,8 +88,9 @@ class FarmConfigurer {
 
   WebAppConfig getWebAppConfigForProject(Map options, Project proj, Boolean inplace = null, String inplaceMode = null) {
     WebAppConfig wconfig = new WebAppConfig()
-    if(!proj.extensions.findByName('gretty'))
+    if (!proj.extensions.findByName('gretty')) {
       throw new GradleException("${proj} does not contain gretty extension. Please make sure that gretty plugin is applied to it.")
+    }
     ConfigUtils.complementProperties(wconfig, options, proj.gretty.webAppConfig, ProjectUtils.getDefaultWebAppConfigForProject(proj), new WebAppConfig(inplace: inplace, inplaceMode: inplaceMode))
     ProjectUtils.resolveWebAppConfig(proj, wconfig, sconfig)
     wconfig
@@ -101,8 +106,9 @@ class FarmConfigurer {
 
   Iterable<WebAppConfig> getWebAppConfigsForProjects(Map wrefs, Boolean inplace = null, String inplaceMode = null) {
     wrefs.findResults { wref, options ->
-      if(options.inplace != null)
+      if (options.inplace != null) {
         inplace = options.inplace
+      }
       def proj = FarmConfigurerUtil.resolveProjectRefToProject(project, wref)
       proj ? getWebAppConfigForProject(options, proj, inplace, inplaceMode) : null
     }
@@ -117,8 +123,9 @@ class FarmConfigurer {
   static void mergeWebAppRefMaps(Map dst, Map src) {
     src.each { webAppRef, options ->
       def existingOptions = dst[webAppRef]
-      if(existingOptions == null)
+      if (existingOptions == null) {
         existingOptions = dst[webAppRef] = [:]
+      }
       existingOptions << options
     }
   }
@@ -126,12 +133,13 @@ class FarmConfigurer {
   // attention: this method may modify project configurations and dependencies.
   void resolveWebAppRefs(String farmName, Map wrefs, Collection<WebAppConfig> destWebAppConfigs, Boolean inplace = null, String inplaceMode = null) {
     wrefs.each { wref, options ->
-      if(options.inplace != null)
+      if (options.inplace != null) {
         inplace = options.inplace
+      }
       def proj, warFile
 
       // little hack for overlays:
-      if(options.finalArchivePath) {
+      if (options.finalArchivePath) {
         wref = options.finalArchivePath
       }
 
@@ -155,11 +163,11 @@ class FarmConfigurer {
       }
 
       WebAppConfig webappConfig
-      if(proj)
+      if (proj) {
         webappConfig = getWebAppConfigForProject(options, proj, inplace, inplaceMode)
-      else if (warFile)
+      } else if (warFile) {
         webappConfig = getWebAppConfigForWarFile(options, warFile)
-      else {
+      } else {
         webappConfig = getWebAppConfigForMavenDependency(options, wref, farmName)
       }
       destWebAppConfigs.add(webappConfig)

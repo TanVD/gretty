@@ -13,7 +13,7 @@ def appenders = []
 def logDir_ = logDir
 def logFileName_ = logFileName
 
-if(consoleLogEnabled) {
+if (consoleLogEnabled) {
   appenders.add('CONSOLE')
   appender('CONSOLE', ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
@@ -22,7 +22,7 @@ if(consoleLogEnabled) {
   }
 }
 
-if(fileLogEnabled) {
+if (fileLogEnabled) {
   appenders.add('FILE')
   appender('FILE', RollingFileAppender) {
     file = "${logDir_}/${logFileName_}.log"

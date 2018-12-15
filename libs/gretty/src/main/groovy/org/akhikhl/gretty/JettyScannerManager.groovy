@@ -7,6 +7,7 @@
  * See the file "CONTRIBUTORS" for complete list of contributors.
  */
 package org.akhikhl.gretty
+
 import org.akhikhl.gretty.scanner.BaseScannerManager
 import org.eclipse.jetty.util.Scanner
 import org.eclipse.jetty.util.Scanner.BulkListener
@@ -40,6 +41,7 @@ final class JettyScannerManager extends BaseScannerManager implements ScannerMan
     scanner.addListener(new ScanCycleListener() {
       void scanEnded(int cycle) {
       }
+
       void scanStarted(int cycle) {
         sconfig.onScan*.call(cycle)
       }
@@ -49,18 +51,20 @@ final class JettyScannerManager extends BaseScannerManager implements ScannerMan
 
   @Override
   void startScanner() {
-    if(!sconfig.scanInterval) {
-      if(sconfig.scanInterval == null)
+    if (!sconfig.scanInterval) {
+      if (sconfig.scanInterval == null) {
         log.info 'scanInterval not specified, hot deployment disabled'
-      else if(sconfig.scanInterval == 0)
+      } else if (sconfig.scanInterval == 0) {
         log.info 'scanInterval is zero, hot deployment disabled'
+      }
       return
     }
     scanner = new Scanner()
     List<File> scanDirs = getEffectiveScanDirs()
     configureFastReload(scanDirs)
-    for(File f in scanDirs)
+    for (File f in scanDirs) {
       log.info 'scanDir: {}', f
+    }
     log.info 'fastReloadMap={}', fastReloadMap
     scanner.scanDirs = scanDirs
     configureScanner()
@@ -70,7 +74,7 @@ final class JettyScannerManager extends BaseScannerManager implements ScannerMan
 
   @Override
   void stopScanner() {
-    if(scanner != null) {
+    if (scanner != null) {
       log.info 'Stopping scanner'
       scanner.stop()
       scanner = null

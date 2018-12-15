@@ -16,15 +16,17 @@ class FarmIntegrationTestPlugin extends BasePlugin {
     project.ext.defineFarmIntegrationTestAllContainers = { Collection integrationTestContainers = null, Closure configureFarm ->
 
       def farmIntegrationTestAllContainersTask = project.tasks.findByName('farmIntegrationTestAllContainers')
-      if (farmIntegrationTestAllContainersTask)
+      if (farmIntegrationTestAllContainersTask) {
         return farmIntegrationTestAllContainersTask
+      }
 
       project.ext.defineIntegrationTestAllContainers(integrationTestContainers)
 
       farmIntegrationTestAllContainersTask = project.task('farmIntegrationTestAllContainers')
 
-      if (!integrationTestContainers)
-        integrationTestContainers = ServletContainerConfig.getConfigNames().collect() // returns immutable and we want to filter later
+      if (!integrationTestContainers) {
+        integrationTestContainers = ServletContainerConfig.getConfigNames().collect()
+      } // returns immutable and we want to filter later
 
       if (project.hasProperty('testAllContainers') && project.testAllContainers) {
         integrationTestContainers.retainAll(Eval.me(project.testAllContainers))

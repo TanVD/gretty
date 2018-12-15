@@ -30,7 +30,6 @@ import static org.eclipse.jetty.security.authentication.FormAuthenticator.__J_PO
 import static org.eclipse.jetty.security.authentication.FormAuthenticator.__J_URI;
 
 /**
- *
  * @author akhikhl
  */
 public class SSOSpnegoAuthenticator extends SpnegoAuthenticator {
@@ -41,31 +40,29 @@ public class SSOSpnegoAuthenticator extends SpnegoAuthenticator {
     }
 
     public SSOSpnegoAuthenticator(String authMethod) {
-      super(authMethod);
+        super(authMethod);
     }
 
     // "login" is copied without changes from FormAuthenticator
     @Override
-    public UserIdentity login(String username, Object password, ServletRequest request)
-    {
+    public UserIdentity login(String username, Object password, ServletRequest request) {
 
-        UserIdentity user = super.login(username,password,request);
-        if (user!=null)
-        {
-            HttpSession session = ((HttpServletRequest)request).getSession(true);
-            Authentication cached=new SessionAuthentication(getAuthMethod(),user,password);
+        UserIdentity user = super.login(username, password, request);
+        if (user != null) {
+            HttpSession session = ((HttpServletRequest) request).getSession(true);
+            Authentication cached = new SessionAuthentication(getAuthMethod(), user, password);
             session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
         }
         return user;
     }
 
     @Override
-    public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory) throws ServerAuthException
-    {
-        HttpServletRequest request = (HttpServletRequest)req;
+    public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory) throws ServerAuthException {
+        HttpServletRequest request = (HttpServletRequest) req;
 
-        if (!mandatory)
+        if (!mandatory) {
             return new DeferredAuthentication(this);
+        }
 
         // ++ copied from FormAuthenticator
 
@@ -73,41 +70,35 @@ public class SSOSpnegoAuthenticator extends SpnegoAuthenticator {
 
         // Look for cached authentication
         Authentication authentication = (Authentication) session.getAttribute(SessionAuthentication.__J_AUTHENTICATED);
-        if (authentication != null)
-        {
+        if (authentication != null) {
             // Has authentication been revoked?
             if (authentication instanceof Authentication.User &&
-                _loginService!=null &&
-                !_loginService.validate(((Authentication.User)authentication).getUserIdentity()))
-            {
+                    _loginService != null &&
+                    !_loginService.validate(((Authentication.User) authentication).getUserIdentity())) {
 
                 session.removeAttribute(SessionAuthentication.__J_AUTHENTICATED);
-            }
-            else
-            {
-                String j_uri=(String)session.getAttribute(__J_URI);
-                if (j_uri!=null)
-                {
-                    MultiMap<String> j_post = (MultiMap<String>)session.getAttribute(__J_POST);
-                    if (j_post!=null)
-                    {
+            } else {
+                String j_uri = (String) session.getAttribute(__J_URI);
+                if (j_uri != null) {
+                    MultiMap<String> j_post = (MultiMap<String>) session.getAttribute(__J_POST);
+                    if (j_post != null) {
                         StringBuffer buf = request.getRequestURL();
-                        if (request.getQueryString() != null)
+                        if (request.getQueryString() != null) {
                             buf.append("?").append(request.getQueryString());
+                        }
 
-                        if (j_uri.equals(buf.toString()))
-                        {
+                        if (j_uri.equals(buf.toString())) {
                             // This is a retry of an original POST request
                             // so restore method and parameters
 
                             session.removeAttribute(__J_POST);
-                            Request base_request = (req instanceof Request)?(Request)req:AbstractHttpConnection.getCurrentConnection().getRequest();
+                            Request base_request = (req instanceof Request) ? (Request) req : AbstractHttpConnection.getCurrentConnection().getRequest();
                             base_request.setMethod(HttpMethods.POST);
                             base_request.setParameters(j_post);
                         }
-                    }
-                    else
+                    } else {
                         session.removeAttribute(__J_URI);
+                    }
 
                 }
                 return authentication;

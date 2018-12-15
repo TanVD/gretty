@@ -15,10 +15,10 @@ import java.util.Set;
 
 @ApplicationPath("/")
 public class JerseyApp extends Application {
-  @Override
-  public Set<Class<?>> getClasses() {
-    final Set<Class<?>> classes = new HashSet<Class<?>>();
-    classes.add(TestResource.class);
-    return classes;
-  }
+    @Override
+    public Set<Class<?>> getClasses() {
+        final Set<Class<?>> classes = new HashSet<Class<?>>();
+        classes.add(TestResource.class);
+        return classes;
+    }
 }

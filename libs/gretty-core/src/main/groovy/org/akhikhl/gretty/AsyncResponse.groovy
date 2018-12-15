@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory
 
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
 /**
@@ -47,9 +46,9 @@ class AsyncResponse {
     try {
       log.debug 'Sending "status" command to (probably) running server...'
       ServiceProtocol.send(servicePort, 'status')
-    } catch(java.net.ConnectException e) {
+    } catch (java.net.ConnectException e) {
       handleConnectionError(e)
-    } catch(java.net.SocketException e) {
+    } catch (java.net.SocketException e) {
       handleConnectionError(e)
     }
 
@@ -59,16 +58,17 @@ class AsyncResponse {
   Future getResponse() {
     listeningForResponse = false
     def future = executorService.submit({
-      synchronized(listeningForResponseLock) {
+      synchronized (listeningForResponseLock) {
         listeningForResponse = true
       }
       ServiceProtocol.readMessage(statusPort)
     } as Callable)
     log.debug 'waiting for AsyncResponse.getResponse to be listen...'
-    while(true) {
-      synchronized(listeningForResponseLock) {
-        if(listeningForResponse)
+    while (true) {
+      synchronized (listeningForResponseLock) {
+        if (listeningForResponse) {
           break
+        }
       }
       Thread.sleep(100)
     }

@@ -8,19 +8,20 @@
  */
 package org.akhikhl.gretty
 
-import java.security.KeyPairGenerator
-import java.security.KeyStore
-import java.security.Security
-import java.security.SecureRandom
-import java.security.cert.Certificate
 import org.apache.commons.lang3.RandomStringUtils
+import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi
 import org.bouncycastle.jce.X509Principal
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi
 import org.bouncycastle.x509.X509V3CertificateGenerator
 import org.gradle.api.Project
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import java.security.KeyPairGenerator
+import java.security.KeyStore
+import java.security.SecureRandom
+import java.security.Security
+import java.security.cert.Certificate
 
 /**
  *
@@ -34,17 +35,17 @@ class CertificateGenerator {
 
   static void maybeGenerate(Project project, ServerConfig sconfig) {
 
-    if(!sconfig.httpsEnabled) {
+    if (!sconfig.httpsEnabled) {
       log.debug 'https not enabled, certificate generator will be disabled'
       return
     }
 
-    if(!providerAdded) {
+    if (!providerAdded) {
       providerAdded = true
       Security.addProvider(new BouncyCastleProvider())
     }
 
-    if(sconfig.sslKeyStorePath) {
+    if (sconfig.sslKeyStorePath) {
       log.info 'Using cryptographic key and certificate from: {}', sconfig.sslKeyStorePath
       return
     }
@@ -55,7 +56,7 @@ class CertificateGenerator {
     File propertiesFile = new File(dir, 'properties')
     String sslKeyStorePassword = null
     String sslKeyManagerPassword = null
-    if(!keystoreFile.exists() || !certFile.exists() || !propertiesFile.exists()) {
+    if (!keystoreFile.exists() || !certFile.exists() || !propertiesFile.exists()) {
       dir.mkdirs()
       log.info 'Generating RSA key'
       KeyPairGenerator keyPairGenerator = KeyPairGeneratorSpi.getInstance('RSA', 'BC')
@@ -66,7 +67,7 @@ class CertificateGenerator {
       certGen.setSerialNumber(BigInteger.valueOf(new SecureRandom().nextInt(Integer.MAX_VALUE)))
       certGen.setIssuerDN(new X509Principal("CN=gretty-issuer, OU=None, O=Gretty, L=None, C=None"))
       certGen.setNotBefore(new Date(System.currentTimeMillis() - 1000L * 60 * 60 * 24 * 30))
-      certGen.setNotAfter(new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * 365*10)))
+      certGen.setNotAfter(new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * 365 * 10)))
       String host = sconfig.sslHost ?: sconfig.host ?: 'localhost'
       certGen.setSubjectDN(new X509Principal("CN=${host}, OU=None, O=${project.name}, L=None, C=None"))
       certGen.setPublicKey(KPair.getPublic())
@@ -80,7 +81,7 @@ class CertificateGenerator {
       sslKeyStorePassword = RandomStringUtils.randomAlphanumeric(128)
       sslKeyManagerPassword = RandomStringUtils.randomAlphanumeric(128)
       ks.load(null, sslKeyStorePassword.toCharArray());
-      ks.setKeyEntry('jetty', KPair.getPrivate(), sslKeyManagerPassword.toCharArray(), [ PKCertificate ] as Certificate[]);
+      ks.setKeyEntry('jetty', KPair.getPrivate(), sslKeyManagerPassword.toCharArray(), [PKCertificate] as Certificate[]);
       log.info 'Writing key and certificate to {}', keystoreFile.absolutePath - project.projectDir.absolutePath - '/'
       keystoreFile.withOutputStream { stm ->
         ks.store(stm, sslKeyStorePassword.toCharArray());

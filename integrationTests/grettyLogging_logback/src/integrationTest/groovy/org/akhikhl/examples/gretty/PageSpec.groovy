@@ -19,9 +19,9 @@ class PageSpec extends GebReportingSpec {
   }
 
   def 'should get expected static page'() {
-  when:
+    when:
     go "${baseURI}"
-  then:
+    then:
     $('body').text() == 'Hello, world!'
   }
 }

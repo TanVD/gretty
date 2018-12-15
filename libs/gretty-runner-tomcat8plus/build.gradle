@@ -2,8 +2,8 @@ apply from: rootProject.file('common.gradle')
 
 dependencies {
   compile project(':libs:gretty-runner-tomcat'), {
-	exclude group: 'org.apache.tomcat.embed'
-	exclude group: 'javax.servlet', module: 'javax.servlet-api'
+    exclude group: 'org.apache.tomcat.embed'
+    exclude group: 'javax.servlet', module: 'javax.servlet-api'
   }
   compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcat85_version"
   compile "org.apache.tomcat.embed:tomcat-embed-el:$tomcat85_version"

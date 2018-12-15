@@ -12,12 +12,12 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-
-import java.util.concurrent.Executors
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Future
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 /**
  *
@@ -31,30 +31,32 @@ abstract class LauncherBase implements Launcher {
     try {
       List sockets = []
       try {
-        if(!range) {
-          while(count-- > 0) {
+        if (!range) {
+          while (count-- > 0) {
             ServerSocket socket = new ServerSocket(0)
             sockets.add(socket)
             result.add(socket.getLocalPort())
           }
         } else {
-          for(Integer port in range) {
+          for (Integer port in range) {
             try {
               ServerSocket socket = new ServerSocket(port)
               sockets.add(socket)
               result.add(socket.getLocalPort())
-              if(--count == 0) {
+              if (--count == 0) {
                 break;
               }
-            } catch (IOException io) { }
+            } catch (IOException io) {
+            }
           }
-          if(count > 0) {
+          if (count > 0) {
             throw new IllegalStateException("Unable to find enough ports");
           }
         }
       } finally {
-        for(ServerSocket socket in sockets)
+        for (ServerSocket socket in sockets) {
           socket.close()
+        }
       }
     } catch (IOException e) {
     }
@@ -98,7 +100,7 @@ abstract class LauncherBase implements Launcher {
   void beforeLaunch() {
     File portPropertiesFile = getPortPropertiesFile()
     portPropertiesFile.parentFile.mkdirs()
-    if(portPropertiesFile.exists()) {
+    if (portPropertiesFile.exists()) {
       Properties portProps = new Properties()
       portPropertiesFile.withReader 'UTF-8', {
         portProps.load(it)
@@ -106,8 +108,9 @@ abstract class LauncherBase implements Launcher {
       int servicePort = portProps.servicePort as int
       int statusPort = portProps.statusPort as int
       def asyncResponse = new AsyncResponse(executorService, statusPort)
-      if(asyncResponse.getStatus(servicePort) == 'started')
+      if (asyncResponse.getStatus(servicePort) == 'started') {
         throw new RuntimeException('Web-server is already running.')
+      }
     }
     (servicePort, statusPort) = findFreePorts(2, sconfig.auxPortRange)
     log.debug 'servicePort: {}, statusPort: {}', servicePort, statusPort
@@ -210,8 +213,9 @@ abstract class LauncherBase implements Launcher {
         } else {
           log.warn 'Unexpected interactiveMode: {}', sconfig.interactiveMode
         }
-      } else
+      } else {
         System.out.println "Run '${config.getStopCommand()}' to stop the server."
+      }
       thread.join()
     } finally {
       afterLaunch()
@@ -221,20 +225,22 @@ abstract class LauncherBase implements Launcher {
   @Override
   Thread launchThread() {
 
-    for(WebAppConfig wconfig in webAppConfigs)
+    for (WebAppConfig wconfig in webAppConfigs) {
       prepareToRun(wconfig)
+    }
 
     Thread thread
 
     def status = asyncResponse.getStatus(servicePort)
 
-    if(status == 'started')
+    if (status == 'started') {
       throw new RuntimeException('Web-server is already running.')
+    }
 
     Future futureResponse = asyncResponse.getResponse()
 
     thread = Thread.start {
-      for(Closure c in sconfig.onStart) {
+      for (Closure c in sconfig.onStart) {
         c.delegate = sconfig
         c.resolveStrategy = Closure.DELEGATE_FIRST
         c()
@@ -244,13 +250,13 @@ abstract class LauncherBase implements Launcher {
         try {
           JavaExecParams params = new JavaExecParams()
           params.main = 'org.akhikhl.gretty.Runner'
-          params.args = [ "--servicePort=${servicePort}", "--statusPort=${statusPort}", "--serverManagerFactory=${getServerManagerFactory()}" ]
+          params.args = ["--servicePort=${servicePort}", "--statusPort=${statusPort}", "--serverManagerFactory=${getServerManagerFactory()}"]
           params.debug = config.getDebug()
           params.debugSuspend = config.getDebugSuspend()
           params.debugPort = config.getDebugPort()
           params.jvmArgs = sconfig.jvmArgs
           params.systemProperties = sconfig.systemProperties
-          if(!sconfig.secureRandom) {
+          if (!sconfig.secureRandom) {
             // Speeding up tomcat startup, according to https://wiki.apache.org/tomcat/HowTo/FasterStartUp
             // ATTENTION: replacing the blocking entropy source (/dev/random) with a non-blocking one
             // actually reduces security because you are getting less-random data.
@@ -261,7 +267,7 @@ abstract class LauncherBase implements Launcher {
           afterJavaExec()
         }
       } finally {
-        for(Closure c in sconfig.onStop) {
+        for (Closure c in sconfig.onStop) {
           c.delegate = sconfig
           c.resolveStrategy = Closure.DELEGATE_FIRST
           c()
@@ -280,8 +286,9 @@ abstract class LauncherBase implements Launcher {
     log.debug 'Got start status: {}', status
     serverStartInfo = new JsonSlurper().parseText(status)
 
-    if(serverStartInfo.error)
+    if (serverStartInfo.error) {
       throw new Exception(serverStartInfo.errorMessage)
+    }
 
     thread
   }
@@ -299,15 +306,18 @@ abstract class LauncherBase implements Launcher {
 
   protected void writeLoggingConfig(json) {
     json.with {
-      if(sconfig.logbackConfigFile)
+      if (sconfig.logbackConfigFile) {
         logbackConfigFile sconfig.logbackConfigFile.toString()
+      }
       loggingLevel sconfig.loggingLevel
       consoleLogEnabled sconfig.consoleLogEnabled
       fileLogEnabled sconfig.fileLogEnabled
-      if(sconfig.logFileName)
+      if (sconfig.logFileName) {
         logFileName sconfig.logFileName
-      if(sconfig.logDir)
+      }
+      if (sconfig.logDir) {
         logDir sconfig.logDir.toString()
+      }
     }
   }
 
@@ -316,73 +326,99 @@ abstract class LauncherBase implements Launcher {
     json.with {
       servletContainerId self.getServletContainerId()
       servletContainerDescription self.getServletContainerDescription()
-      if(sconfig.host)
+      if (sconfig.host) {
         host sconfig.host
-      if(sconfig.httpEnabled) {
+      }
+      if (sconfig.httpEnabled) {
         httpEnabled sconfig.httpEnabled
-        if(sconfig.httpPort)
+        if (sconfig.httpPort) {
           httpPort sconfig.httpPort
-        if(sconfig.httpIdleTimeout)
+        }
+        if (sconfig.httpIdleTimeout) {
           httpIdleTimeout sconfig.httpIdleTimeout
+        }
       }
-      if(sconfig.httpsEnabled) {
+      if (sconfig.httpsEnabled) {
         httpsEnabled sconfig.httpsEnabled
-        if(sconfig.httpsPort)
+        if (sconfig.httpsPort) {
           httpsPort sconfig.httpsPort
-        if(sconfig.httpsIdleTimeout)
+        }
+        if (sconfig.httpsIdleTimeout) {
           httpsIdleTimeout sconfig.httpsIdleTimeout
-        if(sconfig.sslKeyStorePath)
+        }
+        if (sconfig.sslKeyStorePath) {
           sslKeyStorePath self.fileToString(sconfig.sslKeyStorePath)
-        if(sconfig.sslKeyStorePassword)
+        }
+        if (sconfig.sslKeyStorePassword) {
           sslKeyStorePassword sconfig.sslKeyStorePassword
-        if(sconfig.sslKeyManagerPassword)
+        }
+        if (sconfig.sslKeyManagerPassword) {
           sslKeyManagerPassword sconfig.sslKeyManagerPassword
-        if(sconfig.sslTrustStorePath)
+        }
+        if (sconfig.sslTrustStorePath) {
           sslTrustStorePath self.fileToString(sconfig.sslTrustStorePath)
-        if(sconfig.sslTrustStorePassword)
+        }
+        if (sconfig.sslTrustStorePassword) {
           sslTrustStorePassword sconfig.sslTrustStorePassword
-        if(sconfig.sslNeedClientAuth)
+        }
+        if (sconfig.sslNeedClientAuth) {
           sslNeedClientAuth sconfig.sslNeedClientAuth
+        }
       }
-      if(sconfig.realm)
+      if (sconfig.realm) {
         realm sconfig.realm
-      if(sconfig.realmConfigFile)
+      }
+      if (sconfig.realmConfigFile) {
         realmConfigFile self.fileToString(sconfig.realmConfigFile)
-      if(sconfig.serverConfigFile)
+      }
+      if (sconfig.serverConfigFile) {
         serverConfigFile self.fileToString(sconfig.serverConfigFile)
+      }
       writeLoggingConfig(json)
-      if(config.baseDir)
+      if (config.baseDir) {
         baseDir config.baseDir.absolutePath
-      if(sconfig.singleSignOn != null)
+      }
+      if (sconfig.singleSignOn != null) {
         singleSignOn sconfig.singleSignOn
-      if(sconfig.enableNaming != null)
+      }
+      if (sconfig.enableNaming != null) {
         enableNaming sconfig.enableNaming
-      if(config.productMode)
+      }
+      if (config.productMode) {
         productMode true
+      }
       webApps webAppConfigs.collect { WebAppConfig wconfig ->
         { ->
           inplace wconfig.inplace
           inplaceMode wconfig.inplaceMode
-          if(wconfig.springBoot)
+          if (wconfig.springBoot) {
             springBoot true
+          }
           self.writeWebAppClassPath(delegate, wconfig)
           contextPath wconfig.contextPath
           webXml wconfig.webXml
           resourceBase self.fileToString(wconfig.resourceBase)
-          if(wconfig.extraResourceBases)
+          if (wconfig.extraResourceBases) {
             extraResourceBases wconfig.extraResourceBases.collect({ self.fileToString(it) })
-          if(wconfig.initParameters)
+          }
+          if (wconfig.initParameters) {
             initParams wconfig.initParameters
-          if(wconfig.realm)
+          }
+          if (wconfig.realm) {
             realm wconfig.realm
-          if(wconfig.realmConfigFile)
+          }
+          if (wconfig.realmConfigFile) {
             realmConfigFile self.fileToString(wconfig.realmConfigFile)
-          if(wconfig.contextConfigFile)
+          }
+          if (wconfig.contextConfigFile) {
             contextConfigFile self.fileToString(wconfig.contextConfigFile)
-          if(wconfig.springBootMainClass)
+          }
+          if (wconfig.springBootMainClass) {
             springBootMainClass wconfig.springBootMainClass
-          if(wconfig.webInfIncludeJarPattern)
+          }
+          if (wconfig.webInfIncludeJarPattern) {
             webInfIncludeJarPattern wconfig.webInfIncludeJarPattern
+          }
 
         }
       }
@@ -391,10 +427,11 @@ abstract class LauncherBase implements Launcher {
 
   protected void writeWebAppClassPath(json, WebAppConfig webAppConfig) {
     def classPathResolver = config.getWebAppClassPathResolver()
-    if(classPathResolver) {
+    if (classPathResolver) {
       def classPath = classPathResolver.resolveWebAppClassPath(webAppConfig)
-      if(classPath)
+      if (classPath) {
         json.webappClassPath classPath
+      }
     }
   }
 }

@@ -39,8 +39,9 @@ abstract class FarmServiceTask extends DefaultTask {
     configurer.configureFarm(farm, configurer.getProjectFarm(farmName))
     //
     File portPropertiesFile = DefaultLauncher.getPortPropertiesFile(project, farm.serverConfig)
-    if(!portPropertiesFile.exists())
+    if (!portPropertiesFile.exists()) {
       throw new GradleException("Gretty seems to be not running, cannot send command '$command' to it.")
+    }
     Properties portProps = new Properties()
     portPropertiesFile.withReader 'UTF-8', {
       portProps.load(it)

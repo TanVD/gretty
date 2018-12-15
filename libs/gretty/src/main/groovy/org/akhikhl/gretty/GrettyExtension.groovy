@@ -37,8 +37,9 @@ class GrettyExtension extends GrettyConfig {
   }
 
   void overlay(def newValue) {
-    if(!(newValue instanceof String))
+    if (!(newValue instanceof String)) {
       throw new Exception("Overlay ${newValue?.toString()} should be a string")
+    }
     overlays.add newValue
   }
 }

@@ -10,8 +10,16 @@ package org.akhikhl.gretty
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.eclipse.jetty.annotations.*
+import org.eclipse.jetty.annotations.AbstractDiscoverableAnnotationHandler
+import org.eclipse.jetty.annotations.AnnotationConfiguration
+import org.eclipse.jetty.annotations.AnnotationDecorator
+import org.eclipse.jetty.annotations.AnnotationParser
 import org.eclipse.jetty.annotations.AnnotationParser.DiscoverableAnnotationHandler
+import org.eclipse.jetty.annotations.ClassInheritanceHandler
+import org.eclipse.jetty.annotations.ClassNameResolver
+import org.eclipse.jetty.annotations.WebFilterAnnotationHandler
+import org.eclipse.jetty.annotations.WebListenerAnnotationHandler
+import org.eclipse.jetty.annotations.WebServletAnnotationHandler
 import org.eclipse.jetty.util.MultiMap
 import org.eclipse.jetty.util.resource.Resource
 import org.eclipse.jetty.webapp.WebAppContext
@@ -56,8 +64,9 @@ class AnnotationConfigurationEx extends AnnotationConfiguration {
 
       parseAnnotations(context)
 
-      for (DiscoverableAnnotationHandler h : _discoverableAnnotationHandlers)
+      for (DiscoverableAnnotationHandler h : _discoverableAnnotationHandlers) {
         context.getMetaData().addDiscoveredAnnotations(h.getAnnotationList())
+      }
     }
   }
 
@@ -69,29 +78,36 @@ class AnnotationConfigurationEx extends AnnotationConfiguration {
   private void parseAnnotations(WebAppContext context) {
 
     def containerIncludeJarPattern = context.getAttribute('org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern')
-    if(containerIncludeJarPattern)
+    if (containerIncludeJarPattern) {
       containerIncludeJarPattern = java.util.regex.Pattern.compile(containerIncludeJarPattern)
+    }
 
     def containerExcludeJarPattern = context.getAttribute('org.eclipse.jetty.server.webapp.ContainerExcludeJarPattern')
-    if(containerExcludeJarPattern)
+    if (containerExcludeJarPattern) {
       containerExcludeJarPattern = java.util.regex.Pattern.compile(containerExcludeJarPattern)
+    }
 
     AnnotationParser parser = createAnnotationParser()
 
-    for(String classPathElem in classPath) {
+    for (String classPathElem in classPath) {
       URL url = new URL(classPathElem)
       Resource res = Resource.newResource(url)
-      if (res == null)
+      if (res == null) {
         continue
-      if(containerIncludeJarPattern != null && !(url.toString() =~ containerIncludeJarPattern))
+      }
+      if (containerIncludeJarPattern != null && !(url.toString() =~ containerIncludeJarPattern)) {
         continue
-      if(containerExcludeJarPattern != null && (url.toString() =~ containerExcludeJarPattern))
+      }
+      if (containerExcludeJarPattern != null && (url.toString() =~ containerExcludeJarPattern)) {
         continue
+      }
 
       parser.clearHandlers()
-      for (DiscoverableAnnotationHandler h : _discoverableAnnotationHandlers)
-        if (h instanceof AbstractDiscoverableAnnotationHandler)
-          ((AbstractDiscoverableAnnotationHandler)h).setResource(null)
+      for (DiscoverableAnnotationHandler h : _discoverableAnnotationHandlers) {
+        if (h instanceof AbstractDiscoverableAnnotationHandler) {
+          ((AbstractDiscoverableAnnotationHandler) h).setResource(null)
+        }
+      }
 
       parser.registerHandlers(_discoverableAnnotationHandlers)
       parser.registerHandler(_classInheritanceHandler)
@@ -100,12 +116,12 @@ class AnnotationConfigurationEx extends AnnotationConfiguration {
       parser.parse(res, new ClassNameResolver() {
 
         @Override
-        public boolean isExcluded (String name) {
+        public boolean isExcluded(String name) {
           return context.isSystemClass(name)
         }
 
         @Override
-        public boolean shouldOverride (String name) {
+        public boolean shouldOverride(String name) {
           //looking at webapp classpath, found already-parsed class of same name - did it come from system or duplicate in webapp?
           return !context.isParentLoaderPriority()
         }

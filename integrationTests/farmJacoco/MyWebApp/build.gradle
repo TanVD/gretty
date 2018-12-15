@@ -41,8 +41,8 @@ farm {
         // Other webapp projects should be added in execution phase, not configuration phase.
         // When accessing webapp projects in configuration phase,
         // their properties (including sourceSets) are yet undefined.
-        for(Project webappProject in tasks.farmBeforeIntegrationTest.webAppProjects) {
-          if(webappProject != project) {
+        for (Project webappProject in tasks.farmBeforeIntegrationTest.webAppProjects) {
+          if (webappProject != project) {
             additionalSourceDirs webappProject.files(webappProject.sourceSets.main.allSource.srcDirs)
             additionalClassDirs webappProject.sourceSets.main.output
           }

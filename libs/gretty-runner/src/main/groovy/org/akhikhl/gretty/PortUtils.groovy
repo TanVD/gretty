@@ -11,8 +11,9 @@ class PortUtils {
 
   static int findFreePort() {
     int[] ports = findFreePorts(1)
-    if(ports.length == 0)
+    if (ports.length == 0) {
       throw new Exception("Could not find free port")
+    }
     ports[0]
   }
 
@@ -21,30 +22,32 @@ class PortUtils {
     try {
       List sockets = []
       try {
-        if(!range) {
-          while(count-- > 0) {
+        if (!range) {
+          while (count-- > 0) {
             ServerSocket socket = new ServerSocket(0)
             sockets.add(socket)
             result.add(socket.getLocalPort())
           }
         } else {
-          for(Integer port in range) {
+          for (Integer port in range) {
             try {
               ServerSocket socket = new ServerSocket(port)
               sockets.add(socket)
               result.add(socket.getLocalPort())
-              if(--count == 0) {
+              if (--count == 0) {
                 break;
               }
-            } catch (IOException io) { }
+            } catch (IOException io) {
+            }
           }
-          if(count > 0) {
+          if (count > 0) {
             throw new IllegalStateException("Unable to find enough ports");
           }
         }
       } finally {
-        for(ServerSocket socket in sockets)
+        for (ServerSocket socket in sockets) {
           socket.close()
+        }
       }
     } catch (IOException e) {
     }

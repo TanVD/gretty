@@ -30,21 +30,23 @@ class AppStartTask extends StartBaseTask {
   }
 
   protected boolean getEffectiveInplace() {
-    if(webAppConfig.inplace != null)
+    if (webAppConfig.inplace != null) {
       webAppConfig.inplace
-    else if(project.gretty.webAppConfig.inplace != null)
+    } else if (project.gretty.webAppConfig.inplace != null) {
       project.gretty.webAppConfig.inplace
-    else
+    } else {
       true
+    }
   }
 
   protected String getEffectiveInplaceMode() {
-    if(webAppConfig.inplaceMode != null)
+    if (webAppConfig.inplaceMode != null) {
       webAppConfig.inplaceMode
-    else if (project.gretty.webAppConfig.inplaceMode != null)
+    } else if (project.gretty.webAppConfig.inplaceMode != null) {
       project.gretty.webAppConfig.inplaceMode
-    else
+    } else {
       "soft"
+    }
   }
 
   @Override
@@ -61,12 +63,12 @@ class AppStartTask extends StartBaseTask {
     ProjectUtils.resolveWebAppConfig(project, wconfig, sconfig)
     doPrepareWebAppConfig(wconfig)
 
-    if(wconfig.inplace && wconfig.inplaceMode == 'hard') {
-        logger.warn('You\'re running webapp in hard inplaceMode: Overlay and filtering features of gretty will be disabled!')
+    if (wconfig.inplace && wconfig.inplaceMode == 'hard') {
+      logger.warn('You\'re running webapp in hard inplaceMode: Overlay and filtering features of gretty will be disabled!')
     }
 
-    if(wconfig.webXml) {
-        logger.warn('You\'ve configured gretty to use the web.xml file located at ' + wconfig.webXml + '.')
+    if (wconfig.webXml) {
+      logger.warn('You\'ve configured gretty to use the web.xml file located at ' + wconfig.webXml + '.')
     }
 
     new StartConfig() {
@@ -78,7 +80,7 @@ class AppStartTask extends StartBaseTask {
 
       @Override
       Iterable<WebAppConfig> getWebAppConfigs() {
-        [ wconfig ]
+        [wconfig]
       }
     }
   }

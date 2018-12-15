@@ -29,7 +29,7 @@ class AppAfterIntegrationTestTask extends AppStopTask {
   @TaskAction
   void action() {
     super.action()
-    if(project.ext.has('grettyLaunchThread') && project.ext.grettyLaunchThread != null) {
+    if (project.ext.has('grettyLaunchThread') && project.ext.grettyLaunchThread != null) {
       project.ext.grettyLaunchThread.join()
       project.ext.grettyLaunchThread = null
       project.ext.grettyLauncher.afterLaunch()
@@ -48,15 +48,16 @@ class AppAfterIntegrationTestTask extends AppStopTask {
   }
 
   void integrationTestTask(String integrationTestTask) {
-    if(integrationTestTaskAssigned) {
+    if (integrationTestTaskAssigned) {
       log.warn '{}.integrationTestTask is already set to "{}", so "{}" is ignored', name, getIntegrationTestTask(), integrationTestTask
       return
     }
     integrationTestTask_ = integrationTestTask
     def thisTask = this
     project.tasks.all { t ->
-      if(t.name == thisTask.integrationTestTask)
+      if (t.name == thisTask.integrationTestTask) {
         t.finalizedBy thisTask
+      }
     }
     integrationTestTaskAssigned = true
   }

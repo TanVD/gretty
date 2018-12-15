@@ -8,8 +8,8 @@
  */
 package org.akhikhl.gretty
 
-import groovy.transform.ToString
 import groovy.transform.CompileStatic
+import groovy.transform.ToString
 import groovy.transform.TypeCheckingMode
 import org.apache.commons.io.FilenameUtils
 
@@ -60,63 +60,69 @@ class WebAppConfig {
   String springBootMainClass
 
   private static void addClassPathEntries(Set<String> classPath, Object... args) {
-    for(def arg in args) {
-      if(arg != null) {
+    for (def arg in args) {
+      if (arg != null) {
         String url
-        if (arg instanceof URL)
-          url = ((URL)arg).toString()
-        else if (arg instanceof File)
-          url = ((File)arg).getPath()
-        else
+        if (arg instanceof URL) {
+          url = ((URL) arg).toString()
+        } else if (arg instanceof File) {
+          url = ((File) arg).getPath()
+        } else {
           url = arg.toString()
+        }
         classPath.add(url)
       }
     }
   }
 
   void beforeClassPath(Object... args) {
-    if(args) {
+    if (args) {
       addClassPathEntries(beforeClassPath ?: (beforeClassPath = new LinkedHashSet<>()), args)
     }
   }
 
   void classPath(Object... args) {
-    if(args) {
+    if (args) {
       addClassPathEntries(classPath ?: (classPath = new LinkedHashSet<>()), args)
     }
   }
 
   void extraResourceBase(arg) {
-    if(extraResourceBases == null)
+    if (extraResourceBases == null) {
       extraResourceBases = []
+    }
     extraResourceBases.add(arg)
   }
 
   void extraResourceBases(Object... args) {
-    for(def arg in args) {
-      if(arg != null) {
-        if(extraResourceBases == null)
+    for (def arg in args) {
+      if (arg != null) {
+        if (extraResourceBases == null) {
           extraResourceBases = []
+        }
         extraResourceBases.add(arg)
       }
     }
   }
 
   void fastReload(String arg) {
-    if(fastReload == null)
+    if (fastReload == null) {
       fastReload = []
+    }
     fastReload.add(arg)
   }
 
   void fastReload(File arg) {
-    if(fastReload == null)
+    if (fastReload == null) {
       fastReload = []
+    }
     fastReload.add(arg)
   }
 
   void fastReload(Map map) {
-    if(fastReload == null)
+    if (fastReload == null) {
       fastReload = []
+    }
     fastReload.add(map)
   }
 
@@ -137,48 +143,56 @@ class WebAppConfig {
   }
 
   void initParameter(key, value) {
-    if(initParameters == null)
+    if (initParameters == null) {
       initParameters = [:]
+    }
     initParameters[key] = value
   }
 
   protected void prepareToRun() {
     ConfigUtils.resolveClosures(this)
-    if(contextPath instanceof String) {
-      if(!contextPath.startsWith('/'))
+    if (contextPath instanceof String) {
+      if (!contextPath.startsWith('/')) {
         contextPath = '/' + contextPath
-      if(contextPath != '/' && contextPath.endsWith('/'))
+      }
+      if (contextPath != '/' && contextPath.endsWith('/')) {
         contextPath = contextPath.substring(0, contextPath.length() - 1)
+      }
     }
     ConfigUtils.resolveClosures(initParameters)
   }
 
   void scanDir(String value) {
-    if(scanDirs == null)
+    if (scanDirs == null) {
       scanDirs = []
+    }
     scanDirs.add(new File(value))
   }
 
   void scanDir(File value) {
-    if(scanDirs == null)
+    if (scanDirs == null) {
       scanDirs = []
+    }
     scanDirs.add(value)
   }
 
   void scanDir(Object[] args) {
-    for(def arg in args)
-      if(arg != null) {
-        if(scanDirs == null)
+    for (def arg in args) {
+      if (arg != null) {
+        if (scanDirs == null) {
           scanDirs = []
+        }
         scanDirs.add(arg)
       }
+    }
   }
 
   void setFastReload(newValue) {
-    if(newValue == null || Collection.class.isAssignableFrom(newValue.getClass()))
+    if (newValue == null || Collection.class.isAssignableFrom(newValue.getClass())) {
       fastReload = newValue
-    else
-      fastReload = [ newValue ]
+    } else {
+      fastReload = [newValue]
+    }
   }
 
   // use contextConfigFile instead

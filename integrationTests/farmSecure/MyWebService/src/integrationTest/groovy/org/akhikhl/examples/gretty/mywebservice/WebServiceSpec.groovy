@@ -9,13 +9,14 @@
 package org.akhikhl.examples.gretty.mywebservice
 
 import org.akhikhl.gretty.GrettyAjaxSpec
+
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
 
 class WebServiceSpec extends GrettyAjaxSpec {
 
   def 'should reject unauthorized requests'() {
-  when:
+    when:
     def result = https.request(POST, JSON) {
       uri.path = "${contextPath}/getdate"
       response.success = { resp, json ->
@@ -25,12 +26,12 @@ class WebServiceSpec extends GrettyAjaxSpec {
         resp.statusLine.statusCode
       }
     }
-  then:
+    then:
     result == 401 // unauthorized
   }
 
   def 'should reject requests with invalid credentials'() {
-  when:
+    when:
     https.auth.basic 'bogus', 'blabla'
     def result = https.request(POST, JSON) {
       uri.path = "${contextPath}/getdate"
@@ -41,12 +42,12 @@ class WebServiceSpec extends GrettyAjaxSpec {
         resp.statusLine.statusCode
       }
     }
-  then:
+    then:
     result == 401 // unauthorized
   }
 
   def 'should handle authorized requests'() {
-  when:
+    when:
     https.auth.basic 'test', 'test123'
     def result = https.request(POST, JSON) {
       uri.path = "${contextPath}/getdate"
@@ -57,7 +58,7 @@ class WebServiceSpec extends GrettyAjaxSpec {
         resp.statusLine.statusCode
       }
     }
-  then:
+    then:
     result == new Date().format('EEE, d MMM yyyy')
   }
 }

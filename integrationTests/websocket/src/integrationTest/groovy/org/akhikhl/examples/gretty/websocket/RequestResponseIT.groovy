@@ -8,7 +8,7 @@
  */
 package org.akhikhl.examples.gretty.websocket
 
-import geb.Browser
+
 import geb.spock.GebReportingSpec
 
 class RequestResponseIT extends GebReportingSpec {
@@ -24,14 +24,14 @@ class RequestResponseIT extends GebReportingSpec {
   }
 
   def 'should get expected static page'() {
-  setup:
+    setup:
     go "http://${host}:${port}${contextPath}/index.html"
-  expect:
+    expect:
     $('h1').text() == 'Websocket chat'
   }
 
   def 'should send chat messages'() {
-  setup:
+    setup:
     String url = "http://${host}:${port}${contextPath}/index.html"
     go url
     def otherBrowser

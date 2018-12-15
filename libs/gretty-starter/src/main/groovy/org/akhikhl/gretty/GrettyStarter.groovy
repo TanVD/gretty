@@ -38,8 +38,9 @@ class GrettyStarter {
     String command = 'run'
 
     def cliArgs = options.arguments()
-    if(cliArgs)
+    if (cliArgs) {
       command = cliArgs[0]
+    }
 
     Map config
     new File(basedir, 'conf/server.json').withReader {
@@ -51,78 +52,95 @@ class GrettyStarter {
       sconfig[key] = value
     }
 
-    if(options.runnerOverrideArgs)
+    if (options.runnerOverrideArgs) {
       sconfig.jvmArgs = []
-      
+    }
+
     List specialArgs = []
 
-    if(options.runnerArgFile) {
+    if (options.runnerArgFile) {
       File f = new File(options.runnerArgFile)
-      if(!f.isAbsolute())
+      if (!f.isAbsolute()) {
         f = new File(basedir, options.runnerArgFile)
-      if(!f.exists())
-          throw new FileNotFoundException("File ${f.absolutePath} does not exist!")
-      if(sconfig.jvmArgs == null)
+      }
+      if (!f.exists()) {
+        throw new FileNotFoundException("File ${f.absolutePath} does not exist!")
+      }
+      if (sconfig.jvmArgs == null) {
         sconfig.jvmArgs = []
-      for(String arg in f.text.split('\\s'))
-        if(specialArgNames.find { arg.startsWith(it) })
+      }
+      for (String arg in f.text.split('\\s')) {
+        if (specialArgNames.find { arg.startsWith(it) }) {
           specialArgs.add(arg)
-        else
+        } else {
           sconfig.jvmArgs.add(arg)
+        }
+      }
     }
 
-    if(options.runnerArgURL) {
+    if (options.runnerArgURL) {
       URL urlSource = new URL(options.runnerArgURL)
-      if(sconfig.jvmArgs == null)
+      if (sconfig.jvmArgs == null) {
         sconfig.jvmArgs = []
-      for(String arg in urlSource.text.split('\\s'))
-        if(specialArgNames.find { arg.startsWith(it) })
+      }
+      for (String arg in urlSource.text.split('\\s')) {
+        if (specialArgNames.find { arg.startsWith(it) }) {
           specialArgs.add(arg)
-        else
+        } else {
           sconfig.jvmArgs.add(arg)
+        }
+      }
     }
 
-    if(options.runnerArgs) {
-      if(sconfig.jvmArgs == null)
+    if (options.runnerArgs) {
+      if (sconfig.jvmArgs == null) {
         sconfig.jvmArgs = []
-      for(String arg in options.runnerArgs)
-        if(specialArgNames.find { arg.startsWith(it) })
+      }
+      for (String arg in options.runnerArgs) {
+        if (specialArgNames.find { arg.startsWith(it) }) {
           specialArgs.add(arg)
-        else
+        } else {
           sconfig.jvmArgs.add(arg)
+        }
+      }
     }
 
     ConfigUtils.complementProperties(sconfig, ServerConfig.getDefaultServerConfig(config.productName))
-    
-    for(String arg in specialArgs) {
+
+    for (String arg in specialArgs) {
       def (key, value) = arg.split('=')
-      if(key.matches(~'.*Port') || key.matches(~'.*IdleTimeout'))
+      if (key.matches(~'.*Port') || key.matches(~'.*IdleTimeout')) {
         sconfig[key] = value as int
-      else if(key.matches(~'.*Enabled'))
+      } else if (key.matches(~'.*Enabled')) {
         sconfig[key] = Boolean.valueOf(value)
+      }
     }
 
     def resolveFile = { f ->
-      if(f) {
+      if (f) {
         File file = f instanceof File ? f : new File(f)
-        if(!file.isAbsolute())
+        if (!file.isAbsolute()) {
           file = new File(basedir, f)
+        }
         file.exists() ? file : null
       }
     }
 
-    if(!(sconfig.sslKeyStorePath instanceof String) || !(sconfig.sslKeyStorePath.startsWith('classpath:')))
+    if (!(sconfig.sslKeyStorePath instanceof String) || !(sconfig.sslKeyStorePath.startsWith('classpath:'))) {
       sconfig.sslKeyStorePath = resolveFile(sconfig.sslKeyStorePath)
-    if(!(sconfig.sslTrustStorePath instanceof String) || !(sconfig.sslTrustStorePath.startsWith('classpath:')))
+    }
+    if (!(sconfig.sslTrustStorePath instanceof String) || !(sconfig.sslTrustStorePath.startsWith('classpath:'))) {
       sconfig.sslTrustStorePath = resolveFile(sconfig.sslTrustStorePath)
+    }
     sconfig.realmConfigFile = resolveFile(sconfig.realmConfigFile)
     sconfig.serverConfigFile = resolveFile(sconfig.serverConfigFile)
     sconfig.logbackConfigFile = resolveFile(sconfig.logbackConfigFile)
 
-    if(command == 'stop' || command == 'restart') {
+    if (command == 'stop' || command == 'restart') {
       File portPropertiesFile = StarterLauncher.getPortPropertiesFile(basedir)
-      if(!portPropertiesFile.exists())
+      if (!portPropertiesFile.exists()) {
         throw new Exception("Gretty seems to be not running, cannot send command '$command' to it.")
+      }
       Properties portProps = new Properties()
       portPropertiesFile.withReader 'UTF-8', {
         portProps.load(it)
@@ -141,15 +159,19 @@ class GrettyStarter {
       wconfig.resourceBase = resolveFile(wconfig.resourceBase)
       wconfig.realmConfigFile = resolveFile(wconfig.realmConfigFile)
       wconfig.contextConfigFile = resolveFile(wconfig.contextConfigFile)
-      if(wconfig.extraResourceBases)
+      if (wconfig.extraResourceBases) {
         wconfig.extraResourceBases = wconfig.extraResourceBases.collect { resolveFile(it) }
+      }
       File classesDir = new File(wconfig.resourceBase, 'WEB-INF/classes')
-      if(classesDir.exists())
+      if (classesDir.exists()) {
         wconfig.classPath classesDir
+      }
       File libDir = new File(wconfig.resourceBase, 'WEB-INF/lib')
-      if(libDir.exists())
-        for(File jarFile in libDir.listFiles({ it.name.endsWith('.jar') } as FileFilter))
+      if (libDir.exists()) {
+        for (File jarFile in libDir.listFiles({ it.name.endsWith('.jar') } as FileFilter)) {
           wconfig.classPath jarFile
+        }
+      }
       wconfigs.add(wconfig)
     }
 
@@ -195,14 +217,15 @@ class GrettyStarter {
         new WebAppClassPathResolver() {
           Collection<URL> resolveWebAppClassPath(WebAppConfig wconfig) {
             Set<URL> resolvedClassPath = new LinkedHashSet<URL>()
-            for(def classpath in [wconfig.beforeClassPath, wconfig.classPath]) {
+            for (def classpath in [wconfig.beforeClassPath, wconfig.classPath]) {
               if (classpath) {
                 for (String elem in wconfig.classPath) {
                   URL url
-                  if (elem =~ /.{2,}\:.+/)
+                  if (elem =~ /.{2,}\:.+/) {
                     url = new URL(elem)
-                  else
+                  } else {
                     url = resolveFile(new File(elem)).toURI().toURL()
+                  }
                   resolvedClassPath.add(url)
                 }
               }

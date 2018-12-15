@@ -3,8 +3,6 @@ apply plugin: 'org.gretty'
 apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 apply plugin: 'jacoco'
 
-import org.akhikhl.gretty.*
-
 dependencies {
   compile 'org.webjars:bootstrap:3.2.0'
   compile 'org.webjars:jquery:2.1.1'

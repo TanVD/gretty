@@ -1,10 +1,12 @@
 ext {
-  if(has('privateRepoDir')) {
+  if (has('privateRepoDir')) {
     privateRepoDir = privateRepoDir instanceof File ? privateRepoDir.path : privateRepoDir.toString()
-    if(!new File(privateRepoDir).isAbsolute())
+    if (!new File(privateRepoDir).isAbsolute()) {
       privateRepoDir = new File(projectDir, privateRepoDir).canonicalPath
-  } else
+    }
+  } else {
     privateRepoDir = new File(project.projectDir, '../../build/privateRepo').canonicalPath
+  }
 }
 
 def topGradleProps = new Properties()
@@ -20,13 +22,15 @@ new File(projectDir, '../gradle.properties').withInputStream {
 ext.parentGradleProps = parentGradleProps.asImmutable()
 
 topGradleProps.each { key, value ->
-  if(key != 'group' && key != 'version' && key != 'rootProjectName')
+  if (key != 'group' && key != 'version' && key != 'rootProjectName') {
     project.ext[key] = value
+  }
 }
 
 parentGradleProps.each { key, value ->
-  if(key != 'group' && key != 'version' && key != 'rootProjectName')
+  if (key != 'group' && key != 'version' && key != 'rootProjectName') {
     project.ext[key] = value
+  }
 }
 
 allprojects {
@@ -46,7 +50,7 @@ subprojects {
   }
 
   afterEvaluate {
-    if(plugins.findPlugin('java')) {
+    if (plugins.findPlugin('java')) {
 
       sourceCompatibility = 1.7
       targetCompatibility = 1.7

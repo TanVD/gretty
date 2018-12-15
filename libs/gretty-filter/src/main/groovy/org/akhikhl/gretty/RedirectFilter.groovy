@@ -1,16 +1,23 @@
 package org.akhikhl.gretty
 
 import groovy.servlet.ServletCategory
-import groovyx.net.http.URIBuilder
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import javax.servlet.*
-import java.util.regex.Pattern
-import javax.management.ObjectName
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import javax.management.ObjectName
+import javax.servlet.Filter
+import javax.servlet.FilterChain
+import javax.servlet.FilterConfig
+import javax.servlet.ServletContext
+import javax.servlet.ServletException
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
+import java.util.regex.Pattern
 
 @CompileStatic(TypeCheckingMode.SKIP)
 class RedirectFilter implements Filter {
@@ -22,33 +29,42 @@ class RedirectFilter implements Filter {
   }
 
   private static URI buildURI(destination, URI defaultURI) {
-    if(destination instanceof URI)
+    if (destination instanceof URI) {
       return destination
-    if(destination instanceof URIBuilder)
+    }
+    if (destination instanceof URIBuilder) {
       return destination.toURI()
+    }
     URI uri = new URI(destination.toString())
     URIBuilder builder = new URIBuilder(defaultURI.toString())
-    if(uri.scheme)
+    if (uri.scheme) {
       builder.setScheme(uri.scheme)
-    if(uri.userInfo)
+    }
+    if (uri.userInfo) {
       builder.setUserInfo(uri.userInfo)
-    if(uri.host)
+    }
+    if (uri.host) {
       builder.setHost(uri.host)
-    if(uri.port > 0)
+    }
+    if (uri.port > 0) {
       builder.setPort(uri.port)
+    }
     String path = uri.path
-    if(path == null)
+    if (path == null) {
       path = defaultURI.path
-    else if(!path.startsWith('/')) {
-      if(!defaultURI.path.endsWith('/'))
+    } else if (!path.startsWith('/')) {
+      if (!defaultURI.path.endsWith('/')) {
         path = '/' + path
+      }
       path = defaultURI.path + path
     }
     builder.setPath(path)
-    if(uri.query)
+    if (uri.query) {
       builder.setQuery(uri.query)
-    if(uri.fragment)
+    }
+    if (uri.fragment) {
       builder.setFragment(uri.fragment)
+    }
     builder.toURI()
   }
 
@@ -72,7 +88,7 @@ class RedirectFilter implements Filter {
   @Override
   public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
     loadFilters()
-    Map result = [ action: FilterAction.CHAIN ]
+    Map result = [action: FilterAction.CHAIN]
     def filterContext = new Expando()
     filterContext.httpPort = httpPort
     filterContext.httpsPort = httpsPort
@@ -96,14 +112,14 @@ class RedirectFilter implements Filter {
     }
     List filters = []
     synchronized (filtersLock) {
-      for(def f in this.filters) {
+      for (def f in this.filters) {
         Closure closure = f.closure.rehydrate(filterContext, f.owner, f.thisObject)
         closure.resolveStrategy = Closure.DELEGATE_FIRST
         filters.add([options: f.options, closure: closure])
       }
     }
     use(ServletCategory) {
-      while(true) {
+      while (true) {
         filterContext.authority = filterContext.requestURI.authority
         filterContext.fragment = filterContext.requestURI.fragment
         filterContext.host = filterContext.requestURI.host
@@ -113,15 +129,17 @@ class RedirectFilter implements Filter {
         filterContext.scheme = filterContext.requestURI.scheme
         filterContext.userInfo = filterContext.requestURI.userInfo
         filterContext.relPath = filterContext.path - filterContext.contextPath
-        if(!matchFilter(result, filters, filterContext, req, resp))
+        if (!matchFilter(result, filters, filterContext, req, resp)) {
           break
-        if(result.action == FilterAction.CHAIN || result.action == FilterAction.REDIRECT)
+        }
+        if (result.action == FilterAction.CHAIN || result.action == FilterAction.REDIRECT) {
           break
+        }
         filterContext.requestURI = result.uri
       }
     }
     log.trace 'doFilter result={}', result
-    switch(result.action) {
+    switch (result.action) {
       case FilterAction.CHAIN:
         chain.doFilter(req, resp)
         break
@@ -138,11 +156,12 @@ class RedirectFilter implements Filter {
   private boolean matchFilter(Map result, List filters, filterContext, ServletRequest req, ServletResponse resp) {
     filters.find { filter ->
       def matches = [:]
-      for(def option in filter.options) {
+      for (def option in filter.options) {
         boolean matchResult = false
         if (option.value instanceof String || option.value instanceof GString) {
-          if (filterContext[option.key] == option.value)
+          if (filterContext[option.key] == option.value) {
             matchResult = true
+          }
         } else if (option.value instanceof Pattern) {
           def m = filterContext[option.key] =~ option.value
           if (m) {
@@ -150,8 +169,9 @@ class RedirectFilter implements Filter {
             matchResult = true
           }
         }
-        if(!matchResult)
+        if (!matchResult) {
           return false
+        }
       }
       filter.closure.call(matches)
       return result.action != FilterAction.CHAIN // interrupt find, when not chaining
@@ -161,32 +181,34 @@ class RedirectFilter implements Filter {
   @Override
   public void init(FilterConfig config) throws ServletException {
     ServletContext servletContext = config.getServletContext()
-    if(servletContext.hasProperty('contextHandler')) {
+    if (servletContext.hasProperty('contextHandler')) {
       // jetty-specific
       def server = servletContext.contextHandler.server
       server.connectors.each { conn ->
-        if(server.version.startsWith('7.') || server.version.startsWith('8.')) {
-          if(conn.getClass().getName() == 'org.eclipse.jetty.server.bio.SocketConnector')
+        if (server.version.startsWith('7.') || server.version.startsWith('8.')) {
+          if (conn.getClass().getName() == 'org.eclipse.jetty.server.bio.SocketConnector') {
             httpPort = conn.port instanceof Integer ? conn.port : Integer.parseInt(conn.port.toString(), 8080)
-          else if(conn.getClass().getName() == 'org.eclipse.jetty.server.ssl.SslSocketConnector')
+          } else if (conn.getClass().getName() == 'org.eclipse.jetty.server.ssl.SslSocketConnector') {
             httpsPort = conn.port instanceof Integer ? conn.port : Integer.parseInt(conn.port.toString(), 8443)
+          }
         } else {
-          if(conn.protocols.find { it.startsWith 'http/' } && !conn.protocols.find { it.startsWith 'ssl-http/' })
+          if (conn.protocols.find { it.startsWith 'http/' } && !conn.protocols.find { it.startsWith 'ssl-http/' }) {
             httpPort = conn.port instanceof Integer ? conn.port : Integer.parseInt(conn.port.toString(), 8080)
-          else if(conn.protocols.find { it.startsWith 'http/' } && conn.protocols.find { it.startsWith 'ssl-http/' })
+          } else if (conn.protocols.find { it.startsWith 'http/' } && conn.protocols.find { it.startsWith 'ssl-http/' }) {
             httpsPort = conn.port instanceof Integer ? conn.port : Integer.parseInt(conn.port.toString(), 8443)
+          }
         }
       }
-    }
-    else {
+    } else {
       // tomcat-specific
       def mbeans = java.lang.management.ManagementFactory.getPlatformMBeanServer()
-      for(def connName in mbeans.queryNames(new ObjectName('Tomcat:type=Connector,*'), null)) {
+      for (def connName in mbeans.queryNames(new ObjectName('Tomcat:type=Connector,*'), null)) {
         def conn = new GroovyMBean(mbeans, connName)
-        if(conn.scheme == 'http')
+        if (conn.scheme == 'http') {
           httpPort = conn.port
-        else if(conn.scheme == 'https')
+        } else if (conn.scheme == 'https') {
           httpsPort = conn.port
+        }
       }
     }
     log.debug 'found httpPort={}', httpPort
@@ -199,13 +221,14 @@ class RedirectFilter implements Filter {
   protected loadFilters() {
     List newFilters = []
     if (filterConfigUrl.protocol == 'jar' || filterConfigUrl.protocol == 'jndi') {
-      if(configFileLastModified == 0) {
+      if (configFileLastModified == 0) {
         String configText
         filterConfigUrl.openStream().withStream { InputStream filterConfigStream ->
-          if(filterConfigStream != null)
+          if (filterConfigStream != null) {
             configText = filterConfigStream.getText('UTF-8')
+          }
         }
-        if(configText) {
+        if (configText) {
           Binding binding = new Binding()
           binding.filter = { Map options, Closure closure ->
             newFilters.add([options: options, closure: closure])
@@ -223,13 +246,13 @@ class RedirectFilter implements Filter {
           filters = newFilters
         }
       }
-    } else if(filterConfigUrl.protocol == 'file') {
+    } else if (filterConfigUrl.protocol == 'file') {
       boolean configModified = true
       long configFileLastModified = new Date().getTime()
       File configFile = new File(filterConfigUrl.toURI())
-      if(configFile.exists()) {
+      if (configFile.exists()) {
         configModified = this.configFileLastModified != configFile.lastModified()
-        if(configModified) {
+        if (configModified) {
           configFileLastModified = configFile.lastModified()
           Binding binding = new Binding()
           binding.filter = { Map options, Closure closure ->
@@ -244,11 +267,12 @@ class RedirectFilter implements Filter {
           script.run()
         }
       }
-      if(configModified)
+      if (configModified) {
         synchronized (filtersLock) {
           this.configFileLastModified = configFileLastModified
           filters = newFilters
         }
+      }
     }
   }
 }

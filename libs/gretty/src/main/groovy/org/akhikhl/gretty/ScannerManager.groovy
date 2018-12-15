@@ -13,8 +13,9 @@ package org.akhikhl.gretty
  * @author akhikhl
  */
 interface ScannerManager {
-	
+
   void startScanner()
+
   void stopScanner()
 
   void registerFastReloadCallbacks(Closure before, Closure after)

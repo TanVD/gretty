@@ -1,6 +1,7 @@
 apply plugin: 'groovy'
 
-import org.apache.tools.ant.filters.*
+
+import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
   compile gradleApi()
@@ -10,24 +11,24 @@ dependencies {
 }
 
 def projectProps = [
-  projectGroup: project.group,
-  projectName: project.name,
-  projectVersion: project.version,
-  buildDate: new Date().format('yyyy-MM-dd'),
-  buildUser: System.getProperty('user.name'),
-  buildOrigin: ('hostname'.execute().text.trim()),
-  gebVersion: project.gebVersion,
-  geckoDriverVersion: project.geckoDriverVersion,
-  geckoDriverPlatform: project.geckoDriverPlatform,
-  groovy_version: project.groovy_version,
-  seleniumVersion: project.seleniumVersion,
-  spock_version: project.spock_version,
-  testAllContainers: project.testAllContainers
+        projectGroup: project.group,
+        projectName: project.name,
+        projectVersion: project.version,
+        buildDate: new Date().format('yyyy-MM-dd'),
+        buildUser: System.getProperty('user.name'),
+        buildOrigin: ('hostname'.execute().text.trim()),
+        gebVersion: project.gebVersion,
+        geckoDriverVersion: project.geckoDriverVersion,
+        geckoDriverPlatform: project.geckoDriverPlatform,
+        groovy_version: project.groovy_version,
+        seleniumVersion: project.seleniumVersion,
+        spock_version: project.spock_version,
+        testAllContainers: project.testAllContainers
 ]
 
 processResources {
   inputs.properties projectProps
-  outputs.upToDateWhen{ false }
+  outputs.upToDateWhen { false }
   filesMatching('**/project.properties') {
     filter ReplaceTokens, tokens: projectProps
   }

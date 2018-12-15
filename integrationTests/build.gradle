@@ -2,10 +2,12 @@ buildscript {
   project.ext {
     if (has('privateRepoDir')) {
       privateRepoDir = privateRepoDir instanceof File ? privateRepoDir.path : privateRepoDir.toString()
-      if (!new File(privateRepoDir).isAbsolute())
+      if (!new File(privateRepoDir).isAbsolute()) {
         privateRepoDir = new File(projectDir, privateRepoDir).canonicalPath
-    } else
+      }
+    } else {
       privateRepoDir = new File(project.projectDir, '../build/privateRepo').canonicalPath
+    }
   }
 
   def parentGradleProps = new Properties()
@@ -15,8 +17,9 @@ buildscript {
   ext.parentGradleProps = parentGradleProps.asImmutable()
 
   ext.parentGradleProps.each { key, value ->
-    if (key != 'group' && key != 'version' || key != 'rootProjectName')
+    if (key != 'group' && key != 'version' || key != 'rootProjectName') {
       project.ext[key] = value
+    }
   }
 
   repositories {

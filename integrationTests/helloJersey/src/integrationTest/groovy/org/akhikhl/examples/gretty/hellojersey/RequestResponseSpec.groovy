@@ -9,6 +9,7 @@
 package org.akhikhl.examples.gretty.hellojersey
 
 import org.akhikhl.gretty.GrettyAjaxSpec
+
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
 import static javax.servlet.http.HttpServletResponse.*
@@ -16,19 +17,20 @@ import static javax.servlet.http.HttpServletResponse.*
 class RequestResponseSpec extends GrettyAjaxSpec {
 
   def 'should get expected response from Jersey web-service'() {
-  when:
+    when:
     def result = [:]
     conn.request GET, TEXT, {
       uri.path = "$contextPath/testresource"
       response.success = response.failure = { resp, data ->
         result.statusCode = resp.statusLine.statusCode
-        if(data instanceof InputStreamReader)
+        if (data instanceof InputStreamReader) {
           result.data = data.text
-        else
+        } else {
           result.data = data
+        }
       }
     }
-  then:
+    then:
     result.statusCode == SC_OK
     result.data == 'Hello World!'
   }

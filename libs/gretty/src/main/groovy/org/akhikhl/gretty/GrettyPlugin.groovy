@@ -67,18 +67,21 @@ class GrettyPlugin implements Plugin<Project> {
     def runtimeConfig = project.configurations.findByName('runtimeClasspath')
     project.configurations {
       springBoot {
-        if (runtimeConfig)
+        if (runtimeConfig) {
           extendsFrom runtimeConfig
+        }
       }
       grettyProductRuntime {
-        if (runtimeConfig)
+        if (runtimeConfig) {
           extendsFrom runtimeConfig
+        }
       }
     }
     // need to configure providedCompile, so that war excludes grettyProvidedCompile artifacts
     def providedCompile = project.configurations.findByName('providedCompile')
-    if(providedCompile)
+    if (providedCompile) {
       providedCompile.extendsFrom project.configurations.grettyProvidedCompile
+    }
   }
 
   private void addDependencies(Project project) {
@@ -88,12 +91,13 @@ class GrettyPlugin implements Plugin<Project> {
     String springLoadedVersion = project.gretty.springLoadedVersion ?: (project.hasProperty('springLoadedVersion') ? project.springLoadedVersion : Externalized.getString('springLoadedVersion'))
     String hotswapAgentVersion = project.gretty.hotswapAgentVersion ?: (project.hasProperty('hotswapAgentVersion') ? project.hotswapAgentVersion : Externalized.getString('hotswapAgentVersion'))
     String springVersion = project.gretty.springVersion ?: (project.hasProperty('springVersion') ? project.springVersion : Externalized.getString('springVersion'))
-    String logbackVersion = project.gretty.logbackVersion ?: (project.hasProperty('logbackVersion') ? project.logbackVersion :Externalized.getString('logbackVersion'))
+    String logbackVersion = project.gretty.logbackVersion ?: (project.hasProperty('logbackVersion') ? project.logbackVersion : Externalized.getString('logbackVersion'))
 
     project.dependencies {
       grettyStarter "org.gretty:gretty-starter:$grettyVersion"
       grettySpringLoaded "org.springframework:springloaded:$springLoadedVersion"
       grettyHotswapAgent "org.hotswapagent:hotswap-agent:$hotswapAgentVersion"
+      grettyHotswapAgent "org.hotswapagent:hotswap-agent-kotlin-plugin:$hotswapAgentVersion"
     }
 
     ServletContainerConfig.getConfig(project.gretty.servletContainer).with { config ->
@@ -110,7 +114,7 @@ class GrettyPlugin implements Plugin<Project> {
       closure(project)
     }
 
-    if(project.gretty.springBoot) {
+    if (project.gretty.springBoot) {
       String configName = project.configurations.findByName('implementation') ? 'implementation' : 'springBoot'
       project.dependencies.add configName, "org.springframework.boot:spring-boot-starter-web:$springBootVersion", {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
@@ -125,12 +129,15 @@ class GrettyPlugin implements Plugin<Project> {
       project.dependencies.add configName, "org.gretty:gretty-springboot:$grettyVersion"
     }
 
-    for(String overlay in project.gretty.overlays)
+    for (String overlay in project.gretty.overlays) {
       project.dependencies.add 'grettyProvidedCompile', project.project(overlay)
+    }
 
     def runtimeConfig = project.configurations.findByName('runtimeClasspath')
-    if(runtimeConfig) {
-      if(runtimeConfig.allDependencies.find { it.name == 'slf4j-api' } && !runtimeConfig.allDependencies.find { it.name in ['slf4j-nop', 'slf4j-simple', 'slf4j-log4j12', 'slf4j-jdk14', 'logback-classic', 'log4j-slf4j-impl'] }) {
+    if (runtimeConfig) {
+      if (runtimeConfig.allDependencies.find { it.name == 'slf4j-api' } && !runtimeConfig.allDependencies.find {
+        it.name in ['slf4j-nop', 'slf4j-simple', 'slf4j-log4j12', 'slf4j-jdk14', 'logback-classic', 'log4j-slf4j-impl']
+      }) {
         log.warn("Found slf4j-api dependency but no providers were found.  Did you mean to add slf4j-simple? See https://www.slf4j.org/codes.html#noProviders .")
       }
     }
@@ -142,12 +149,12 @@ class GrettyPlugin implements Plugin<Project> {
         def result = typeAndResult[1]
 
         def configurationName = ProjectUtils.getFarmConfigurationName(fname)
-        if(FarmWebappType.WAR_DEPENDENCY == type) {
+        if (FarmWebappType.WAR_DEPENDENCY == type) {
           project.configurations.maybeCreate(configurationName)
           project.dependencies.add configurationName, result
         }
 
-        if(type in [FarmWebappType.WAR_DEPENDENCY, FarmWebappType.WAR_FILE]) {
+        if (type in [FarmWebappType.WAR_DEPENDENCY, FarmWebappType.WAR_FILE]) {
           project.configurations.maybeCreate(configurationName)
           options.dependencies?.each {
             project.dependencies.add configurationName, it
@@ -186,23 +193,25 @@ class GrettyPlugin implements Plugin<Project> {
   private void addTaskDependencies(Project project) {
 
     project.tasks.whenObjectAdded { task ->
-      if (GradleUtils.instanceOf(task, 'org.akhikhl.gretty.AppStartTask'))
+      if (GradleUtils.instanceOf(task, 'org.akhikhl.gretty.AppStartTask')) {
         task.dependsOn {
           // We don't need any task for hard inplace mode.
           task.effectiveInplace ? project.tasks.prepareInplaceWebApp : project.tasks.prepareArchiveWebApp
         }
-      else if (GradleUtils.instanceOf(task, 'org.akhikhl.gretty.FarmStartTask')) {
+      } else if (GradleUtils.instanceOf(task, 'org.akhikhl.gretty.FarmStartTask')) {
         task.dependsOn {
           task.getWebAppConfigsForProjects().findResults {
             def proj = project.project(it.projectPath)
             boolean inplace = it.inplace == null ? task.inplace : it.inplace
             String prepareTaskName = inplace ? 'prepareInplaceWebApp' : 'prepareArchiveWebApp'
             def projTask = proj.tasks.findByName(prepareTaskName)
-            if(!projTask)
+            if (!projTask) {
               proj.tasks.whenObjectAdded { t ->
-                if(t.name == prepareTaskName)
+                if (t.name == prepareTaskName) {
                   task.dependsOn t
+                }
               }
+            }
             projTask
           }
         }
@@ -211,7 +220,7 @@ class GrettyPlugin implements Plugin<Project> {
         project.farms.farmsMap[farmName].webAppRefs.each { wref, options ->
           def typeAndResult = FarmConfigurerUtil.resolveWebAppType(project, options.suppressMavenToProjectResolution, wref)
           def type = typeAndResult[0]
-          if(type in [FarmWebappType.WAR_FILE, FarmWebappType.WAR_DEPENDENCY]) {
+          if (type in [FarmWebappType.WAR_FILE, FarmWebappType.WAR_DEPENDENCY]) {
             if (options.overlays) {
               def warFile
               if (type == FarmWebappType.WAR_FILE) {
@@ -232,7 +241,7 @@ class GrettyPlugin implements Plugin<Project> {
 
   private void addTasks(Project project) {
 
-    if(project.tasks.findByName('classes')) { // JVM project?
+    if (project.tasks.findByName('classes')) { // JVM project?
 
       project.task('prepareInplaceWebAppFolder', group: 'gretty', type: Copy) {
 
@@ -285,8 +294,9 @@ class GrettyPlugin implements Plugin<Project> {
       project.task('prepareInplaceWebAppClasses', group: 'gretty') {
         description = 'Compiles classes of this web-app and all overlays (if any)'
         dependsOn project.tasks.classes
-        for(String overlay in project.gretty.overlays)
+        for (String overlay in project.gretty.overlays) {
           dependsOn "$overlay:prepareInplaceWebAppClasses"
+        }
       }
 
       project.task('prepareInplaceWebApp', group: 'gretty') {
@@ -303,7 +313,7 @@ class GrettyPlugin implements Plugin<Project> {
         closure()
       }
 
-      if(project.gretty.overlays) {
+      if (project.gretty.overlays) {
 
         project.ext.finalArchivePath = archiveTask.archivePath
 
@@ -312,11 +322,13 @@ class GrettyPlugin implements Plugin<Project> {
         // 'explodeWebApps' task is only activated by 'overlayArchive' task
         project.task('explodeWebApps', group: 'gretty') {
           description = 'Explodes this web-app and all overlays (if any) to ${buildDir}/explodedWebapp'
-          for(String overlay in project.gretty.overlays)
+          for (String overlay in project.gretty.overlays) {
             dependsOn "$overlay:assemble" as String
+          }
           dependsOn archiveTask
-          for(String overlay in project.gretty.overlays)
+          for (String overlay in project.gretty.overlays) {
             inputs.file { ProjectUtils.getFinalArchivePath(project.project(overlay)) }
+          }
           inputs.file archiveTask.archivePath
           outputs.dir "${project.buildDir}/explodedWebapp"
           doLast {
@@ -339,10 +351,11 @@ class GrettyPlugin implements Plugin<Project> {
 
       project.task('prepareArchiveWebApp', group: 'gretty') {
         description = 'Prepares war web-app'
-        if(project.gretty.overlays)
+        if (project.gretty.overlays) {
           dependsOn project.tasks.overlayArchive
-        else
+        } else {
           dependsOn archiveTask
+        }
       }
 
       project.task('appRun', type: AppStartTask, group: 'gretty') {
@@ -365,7 +378,7 @@ class GrettyPlugin implements Plugin<Project> {
         debug = true
       }
 
-      if(project.plugins.findPlugin(org.gradle.api.plugins.WarPlugin)) {
+      if (project.plugins.findPlugin(org.gradle.api.plugins.WarPlugin)) {
 
         project.task('appRunWar', type: AppStartTask, group: 'gretty') {
           description = 'Starts web-app on WAR-file, in interactive mode.'
@@ -428,7 +441,7 @@ class GrettyPlugin implements Plugin<Project> {
         debug = true
       }
 
-      if(project.plugins.findPlugin(org.gradle.api.plugins.WarPlugin)) {
+      if (project.plugins.findPlugin(org.gradle.api.plugins.WarPlugin)) {
 
         project.task('jettyRunWar', type: JettyStartTask, group: 'gretty') {
           description = 'Starts web-app on WAR-file, in interactive mode.'
@@ -483,7 +496,7 @@ class GrettyPlugin implements Plugin<Project> {
         debug = true
       }
 
-      if(project.plugins.findPlugin(org.gradle.api.plugins.WarPlugin)) {
+      if (project.plugins.findPlugin(org.gradle.api.plugins.WarPlugin)) {
 
         project.task('tomcatRunWar', type: TomcatStartTask, group: 'gretty') {
           description = 'Starts web-app on WAR-file, in interactive mode.'
@@ -553,7 +566,7 @@ class GrettyPlugin implements Plugin<Project> {
               log.info("Farm {} contains webapp {} with overlays: {}", fname, wref, options.overlays)
 
               def warFile
-              if(type == FarmWebappType.WAR_FILE) {
+              if (type == FarmWebappType.WAR_FILE) {
                 warFile = typeAndResult[1]
               } else if (type == FarmWebappType.WAR_DEPENDENCY) {
                 warFile = ProjectUtils.getFileFromConfiguration(project, ProjectUtils.getFarmConfigurationName(fname), typeAndResult[1])
@@ -564,11 +577,12 @@ class GrettyPlugin implements Plugin<Project> {
 
               def explodeWebappTask = project.task("farmExplodeWebapp$fname${warFile.name}", group: 'gretty') {
                 description = 'Explode webapp and all overlays into ${buildDir}/farms/${fname}/explodedWebapps/${wref}'
-                for(String overlay in overlays) {
-                  dependsOn "$overlay:assemble" as  String
+                for (String overlay in overlays) {
+                  dependsOn "$overlay:assemble" as String
                 }
-                for(String overlay in overlays)
+                for (String overlay in overlays) {
                   inputs.file { ProjectUtils.getFinalArchivePath(project.project(overlay)) }
+                }
                 inputs.file warFile
                 outputs.dir outputFolder
                 doLast {
@@ -601,24 +615,26 @@ class GrettyPlugin implements Plugin<Project> {
       project.task('farmRun' + fname, type: FarmStartTask, group: 'gretty') {
         description = "Starts ${farmDescr} inplace, in interactive mode."
         farmName = fname
-        if(!fname)
+        if (!fname) {
           doFirst {
             GradleUtils.disableTaskOnOtherProjects(project, 'run')
             GradleUtils.disableTaskOnOtherProjects(project, 'jettyRun')
             GradleUtils.disableTaskOnOtherProjects(project, 'farmRun')
           }
+        }
       }
 
       project.task('farmRunDebug' + fname, type: FarmStartTask, group: 'gretty') {
         description = "Starts ${farmDescr} inplace, in debug and in interactive mode."
         farmName = fname
         debug = true
-        if(!fname)
+        if (!fname) {
           doFirst {
             GradleUtils.disableTaskOnOtherProjects(project, 'debug')
             GradleUtils.disableTaskOnOtherProjects(project, 'jettyRunDebug')
             GradleUtils.disableTaskOnOtherProjects(project, 'farmRunDebug')
           }
+        }
       }
 
       project.task('farmStart' + fname, type: FarmStartTask, group: 'gretty') {
@@ -693,45 +709,50 @@ class GrettyPlugin implements Plugin<Project> {
 
   private void afterProjectEvaluate(Project project) {
 
-    if(project.extensions.findByName('gretty')) {
+    if (project.extensions.findByName('gretty')) {
 
       addConfigurationsAfterEvaluate(project)
       addTaskDependencies(project)
       new ProductsConfigurer(project).configureProducts()
 
-      if(project.gretty.autoConfigureRepositories)
+      if (project.gretty.autoConfigureRepositories) {
         addRepositories(project)
+      }
 
       addDependencies(project)
       addTasks(project)
 
-      for(Closure afterEvaluateClosure in project.gretty.afterEvaluate) {
+      for (Closure afterEvaluateClosure in project.gretty.afterEvaluate) {
         afterEvaluateClosure.delegate = project.gretty
         afterEvaluateClosure.resolveStrategy = Closure.DELEGATE_FIRST
         afterEvaluateClosure()
       }
 
       project.tasks.findByName('appBeforeIntegrationTest')?.with {
-        if(!integrationTestTaskAssigned)
-          integrationTestTask null // default binding
+        if (!integrationTestTaskAssigned) {
+          integrationTestTask null
+        } // default binding
       }
 
       project.tasks.findByName('appAfterIntegrationTest')?.with {
-        if(!integrationTestTaskAssigned)
-          integrationTestTask null // default binding
+        if (!integrationTestTaskAssigned) {
+          integrationTestTask null
+        } // default binding
       }
 
-      if(!project.tasks.findByName('run') && project.hasProperty('gretty_runTask') && Boolean.valueOf(project.gretty_runTask))
+      if (!project.tasks.findByName('run') && project.hasProperty('gretty_runTask') && Boolean.valueOf(project.gretty_runTask)) {
         project.task('run', group: 'gretty') {
           description = 'Starts web-app inplace, in interactive mode. Same as appRun task.'
           dependsOn 'appRun'
         }
+      }
 
-      if(!project.tasks.findByName('debug') && project.hasProperty('gretty_debugTask') && Boolean.valueOf(project.gretty_debugTask))
+      if (!project.tasks.findByName('debug') && project.hasProperty('gretty_debugTask') && Boolean.valueOf(project.gretty_debugTask)) {
         project.task('debug', group: 'gretty') {
           description = 'Starts web-app inplace, in debug and interactive mode. Same as appRunDebug task.'
           dependsOn 'appRunDebug'
         }
+      }
     }
   }
 
@@ -739,82 +760,103 @@ class GrettyPlugin implements Plugin<Project> {
 
     rootProject.allprojects { project ->
 
-      if(project.extensions.findByName('farms'))
+      if (project.extensions.findByName('farms')) {
         project.farms.farmsMap.each { fname, farm ->
 
-          for(Closure afterEvaluateClosure in farm.afterEvaluate) {
+          for (Closure afterEvaluateClosure in farm.afterEvaluate) {
             afterEvaluateClosure.delegate = farm
             afterEvaluateClosure.resolveStrategy = Closure.DELEGATE_FIRST
             afterEvaluateClosure()
           }
 
-          if(!project.tasks."farmBeforeIntegrationTest$fname".integrationTestTaskAssigned)
-            project.tasks."farmBeforeIntegrationTest$fname".integrationTestTask null // default binding
+          if (!project.tasks."farmBeforeIntegrationTest$fname".integrationTestTaskAssigned) {
+            project.tasks."farmBeforeIntegrationTest$fname".integrationTestTask null
+          } // default binding
 
-          if(!project.tasks."farmIntegrationTest$fname".integrationTestTaskAssigned)
-            project.tasks."farmIntegrationTest$fname".integrationTestTask null // default binding
+          if (!project.tasks."farmIntegrationTest$fname".integrationTestTaskAssigned) {
+            project.tasks."farmIntegrationTest$fname".integrationTestTask null
+          } // default binding
 
-          if(!project.tasks."farmAfterIntegrationTest$fname".integrationTestTaskAssigned)
-            project.tasks."farmAfterIntegrationTest$fname".integrationTestTask null // default binding
+          if (!project.tasks."farmAfterIntegrationTest$fname".integrationTestTaskAssigned) {
+            project.tasks."farmAfterIntegrationTest$fname".integrationTestTask null
+          } // default binding
         }
+      }
     }
   }
 
   void apply(final Project project) {
 
-    if(project.gradle.gradleVersion.startsWith('1.')) {
+    if (project.gradle.gradleVersion.startsWith('1.')) {
       String releaseNumberStr = project.gradle.gradleVersion.split('\\.')[1]
-      if(releaseNumberStr.contains('-'))
+      if (releaseNumberStr.contains('-')) {
         releaseNumberStr = releaseNumberStr.split('-')[0]
+      }
       int releaseNumber = releaseNumberStr as int
-      if(releaseNumber < 10)
+      if (releaseNumber < 10) {
         throw new GradleException("Gretty supports only Gradle 1.10 or newer. You have Gradle ${project.gradle.gradleVersion}.")
+      }
     }
 
     project.ext {
       grettyVersion = Externalized.getString('grettyVersion')
-      if(!has('jetty7Version'))
+      if (!has('jetty7Version')) {
         jetty7Version = Externalized.getString('jetty7Version')
-      if(!has('jetty7ServletApiVersion'))
+      }
+      if (!has('jetty7ServletApiVersion')) {
         jetty7ServletApiVersion = Externalized.getString('jetty7ServletApiVersion')
-      if(!has('jetty8Version'))
+      }
+      if (!has('jetty8Version')) {
         jetty8Version = Externalized.getString('jetty8Version')
-      if(!has('jetty8ServletApiVersion'))
+      }
+      if (!has('jetty8ServletApiVersion')) {
         jetty8ServletApiVersion = Externalized.getString('jetty8ServletApiVersion')
-      if(!has('jetty9Version'))
+      }
+      if (!has('jetty9Version')) {
         jetty9Version = Externalized.getString('jetty9Version')
-      if(!has('jetty93Version'))
+      }
+      if (!has('jetty93Version')) {
         jetty93Version = Externalized.getString('jetty93Version')
-      if(!has('jetty94Version'))
+      }
+      if (!has('jetty94Version')) {
         jetty94Version = Externalized.getString('jetty94Version')
-      if(!has('jetty9ServletApiVersion'))
+      }
+      if (!has('jetty9ServletApiVersion')) {
         jetty9ServletApiVersion = Externalized.getString('jetty9ServletApiVersion')
-      if(!has('tomcat85Version'))
+      }
+      if (!has('tomcat85Version')) {
         tomcat85Version = Externalized.getString('tomcat85Version')
-      if(!has('tomcat85ServletApiVersion'))
+      }
+      if (!has('tomcat85ServletApiVersion')) {
         tomcat85ServletApiVersion = Externalized.getString('tomcat85ServletApiVersion')
-      if(!has('tomcat9Version'))
+      }
+      if (!has('tomcat9Version')) {
         tomcat9Version = Externalized.getString('tomcat9Version')
-      if(!has('tomcat9ServletApiVersion'))
+      }
+      if (!has('tomcat9ServletApiVersion')) {
         tomcat9ServletApiVersion = Externalized.getString('tomcat9ServletApiVersion')
-      if(!has('asmVersion'))
+      }
+      if (!has('asmVersion')) {
         asmVersion = Externalized.getString('asmVersion')
+      }
     }
 
     addExtensions(project)
     addConfigurations(project)
 
-    if(!project.rootProject.hasProperty('gretty_')) {
+    if (!project.rootProject.hasProperty('gretty_')) {
       Project rootProject = project.rootProject
       rootProject.ext.gretty_ = [:]
       rootProject.ext.gretty_.evalProjectCount = rootProject.allprojects.sum 0, { it.state.executed ? 0 : 1 }
-      for(def p in rootProject.allprojects)
+      for (def p in rootProject.allprojects) {
         p.afterEvaluate { proj ->
           afterProjectEvaluate(proj)
           rootProject.ext.gretty_.evalProjectCount = rootProject.ext.gretty_.evalProjectCount - 1
-          if(rootProject.ext.gretty_.evalProjectCount == 0)
+          if (rootProject.ext.gretty_.evalProjectCount == 0) {
             afterAllProjectsEvaluate(rootProject)
+          }
         }
+      }
     }
   } // apply
 }

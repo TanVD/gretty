@@ -25,11 +25,13 @@ class FarmsConfig {
   }
 
   void farm(String name = null, Closure closure) {
-    if(name == null)
+    if (name == null) {
       name = ''
+    }
     def f = farmsMap_[name]
-    if(f == null)
+    if (f == null) {
       f = farmsMap_[name] = createFarm()
+    }
     closure.delegate = f
     closure.resolveStrategy = Closure.DELEGATE_FIRST
     closure()

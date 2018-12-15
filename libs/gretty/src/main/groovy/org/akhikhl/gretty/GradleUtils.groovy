@@ -18,19 +18,22 @@ import org.gradle.api.Project
  */
 @CompileStatic(TypeCheckingMode.SKIP)
 class GradleUtils {
-  
+
   static boolean derivedFrom(Class targetClass, String className) {
-    while(targetClass != null) {
-      if(targetClass.getName() == className)
+    while (targetClass != null) {
+      if (targetClass.getName() == className) {
         return true
-      for(Class intf in targetClass.getInterfaces())
-        if(derivedFrom(intf, className))
+      }
+      for (Class intf in targetClass.getInterfaces()) {
+        if (derivedFrom(intf, className)) {
           return true
+        }
+      }
       targetClass = targetClass.getSuperclass()
     }
     return false
   }
-  
+
   /**
    * Replacement for instanceof operator, workaround for Gradle 1.10 bug:
    * task classes defined in "build.gradle" fail instanceof check for base classes in gradle plugins.
@@ -41,8 +44,9 @@ class GradleUtils {
 
   static void disableTaskOnOtherProjects(Project thisProject, String taskName) {
     thisProject.rootProject.allprojects { proj ->
-      if(proj != thisProject && proj.tasks.findByName(taskName))
+      if (proj != thisProject && proj.tasks.findByName(taskName)) {
         proj.tasks[taskName].enabled = false
+      }
     }
   }
 }

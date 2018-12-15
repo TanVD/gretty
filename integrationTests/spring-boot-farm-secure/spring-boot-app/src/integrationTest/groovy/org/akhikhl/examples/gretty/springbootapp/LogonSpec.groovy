@@ -19,41 +19,42 @@ class RequestResponseIT extends GebReportingSpec {
   }
 
   def 'should reject invalid credentials'() {
-  when:
+    when:
     go baseURI
-  then: 'base URI should redirect to login page'
+    then: 'base URI should redirect to login page'
     $('h1.login-title').text() == 'Log in'
-  when:
+    when:
     $('form.form-signin input[name=j_username]').value('abc')
     $('form.form-signin input[name=j_password]').value('def')
     $('form.form-signin button[type=submit]').click()
-  then: 'login should fail'
+    then: 'login should fail'
     waitFor { $('h1.login-title').text() == 'Login failed' }
   }
 
   def 'should accept valid credentials and interact with web-services'() {
-    if(!System.getProperty('gretty.farm'))
+    if (!System.getProperty('gretty.farm')) {
       return
-  when:
+    }
+    when:
     go baseURI
-  then: 'base URI should redirect to login page'
+    then: 'base URI should redirect to login page'
     $('h1.login-title').text() == 'Log in'
-  when:
+    when:
     $('form.form-signin input[name=j_username]').value('test')
     $('form.form-signin input[name=j_password]').value('test123')
     $('form.form-signin button[type=submit]').click()
-  then: 'login should succeed'
+    then: 'login should succeed'
     waitFor { $('h1').text() == 'Hello, world!' }
     $('p', 0).text() == 'This is static HTML page.'
-  when:
+    when:
     $('#sendRequest1').click()
     waitFor { $("p.hide#result1").size() == 0 }
-  then: 'ajax call to spring-boot web-service should succeed with the same credentials'
+    then: 'ajax call to spring-boot web-service should succeed with the same credentials'
     $('#result1').text() == 'Got from server: ' + new Date().format('EEE, d MMM yyyy')
-  when:
+    when:
     $('#sendRequest2').click()
     waitFor { $("p.hide#result2").size() == 0 }
-  then:
+    then:
     waitFor { $('#result2').text() == 'Got from server: ' + new Date().format('EEE, d MMM yyyy') }
   }
 }

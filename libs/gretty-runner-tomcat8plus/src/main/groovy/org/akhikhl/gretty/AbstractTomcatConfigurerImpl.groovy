@@ -19,6 +19,7 @@ import org.apache.tomcat.JarScanner
 import org.apache.tomcat.util.descriptor.web.WebXml
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 /**
  *
  * @author akhikhl
@@ -33,10 +34,10 @@ abstract class AbstractTomcatConfigurerImpl implements TomcatConfigurer {
 
     new ContextConfig() {
 
-      protected Map<String,WebXml> processJarsForWebFragments(WebXml application) {
+      protected Map<String, WebXml> processJarsForWebFragments(WebXml application) {
         def fragments = super.processJarsForWebFragments(application)
         // here we enable annotation processing for non-jar urls on the classpath
-        for(URL url in classpathUrls.findAll { !it.path.endsWith('.jar') && new File(it.path).exists() }) {
+        for (URL url in classpathUrls.findAll { !it.path.endsWith('.jar') && new File(it.path).exists() }) {
           WebXml fragment = new WebXml()
           fragment.setDistributable(true)
           fragment.setURL(url)
@@ -68,12 +69,14 @@ abstract class AbstractTomcatConfigurerImpl implements TomcatConfigurer {
     WebResourceRoot root = new StandardRoot(context)
     context.setResources(root)
 
-    if(webappParams.extraResourceBases)
+    if (webappParams.extraResourceBases) {
       webappParams.extraResourceBases.each { root.createWebResourceSet(WebResourceRoot.ResourceSetType.POST, '/', it, null, '/') }
+    }
 
 
-    if (webappParams.webXml)
-      context.setAltDDName(webappParams.webXml);
+    if (webappParams.webXml) {
+      context.setAltDDName(webappParams.webXml)
+    };
 
     Set classpathJarParentDirs = webappParams.webappClassPath.findAll { it.endsWith('.jar') }.collect({
       File jarFile = it.startsWith('file:') ? new File(new URI(it)) : new File(it)

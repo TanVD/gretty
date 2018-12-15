@@ -48,8 +48,9 @@ class TomcatServerConfigurer {
 
     Tomcat tomcat = new Tomcat()
 
-    if(params.enableNaming)
+    if (params.enableNaming) {
       tomcat.enableNaming()
+    }
 
     File baseDir = new File(params.baseDir)
     new File(baseDir, 'webapps').mkdirs()
@@ -59,7 +60,7 @@ class TomcatServerConfigurer {
     def service
     def connectors
 
-    if(params.serverConfigFile) {
+    if (params.serverConfigFile) {
       def catalina = new Catalina()
       def digester = catalina.createStartDigester()
       new File(params.serverConfigFile).withInputStream {
@@ -88,31 +89,35 @@ class TomcatServerConfigurer {
       connectors = service.findConnectors()
     }
 
-    if(!tomcat.hostname)
+    if (!tomcat.hostname) {
       tomcat.hostname = params.host ?: ServerDefaults.defaultHost
+    }
 
     Connector httpConn = connectors.find { it.scheme == 'http' }
 
     boolean newHttpConnector = false
-    if(params.httpEnabled && !httpConn) {
+    if (params.httpEnabled && !httpConn) {
       newHttpConnector = true
       httpConn = new Connector('HTTP/1.1')
       httpConn.scheme = 'http'
     }
 
-    if(httpConn) {
-      if(!httpConn.port || httpConn.port < 0)
+    if (httpConn) {
+      if (!httpConn.port || httpConn.port < 0) {
         httpConn.port = params.httpPort ?: ServerDefaults.defaultHttpPort
+      }
 
-      if(httpConn.port == PortUtils.RANDOM_FREE_PORT)
+      if (httpConn.port == PortUtils.RANDOM_FREE_PORT) {
         httpConn.port = PortUtils.findFreePort()
+      }
 
-      if(params.httpIdleTimeout)
+      if (params.httpIdleTimeout) {
         httpConn.setProperty('keepAliveTimeout', params.httpIdleTimeout.toString())
+      }
 
       httpConn.setProperty('maxPostSize', '0') // unlimited post size
 
-      if(newHttpConnector) {
+      if (newHttpConnector) {
         service.addConnector(httpConn)
         connectors = service.findConnectors()
       }
@@ -121,93 +126,106 @@ class TomcatServerConfigurer {
     Connector httpsConn = connectors.find { it.scheme == 'https' }
 
     boolean newHttpsConnector = false
-    if(params.httpsEnabled && !httpsConn) {
-        newHttpsConnector = true
-        httpsConn = new Connector('HTTP/1.1')
-        httpsConn.scheme = 'https'
-        httpsConn.secure = true
-        httpsConn.setProperty('SSLEnabled', 'true')
+    if (params.httpsEnabled && !httpsConn) {
+      newHttpsConnector = true
+      httpsConn = new Connector('HTTP/1.1')
+      httpsConn.scheme = 'https'
+      httpsConn.secure = true
+      httpsConn.setProperty('SSLEnabled', 'true')
     }
 
-    if(httpsConn) {
-      if(!httpsConn.port || httpsConn.port < 0)
+    if (httpsConn) {
+      if (!httpsConn.port || httpsConn.port < 0) {
         httpsConn.port = params.httpsPort ?: ServerDefaults.defaultHttpsPort
+      }
 
-      if(httpsConn.port == PortUtils.RANDOM_FREE_PORT)
+      if (httpsConn.port == PortUtils.RANDOM_FREE_PORT) {
         httpsConn.port = PortUtils.findFreePort()
+      }
 
-      if(params.sslKeyManagerPassword)
+      if (params.sslKeyManagerPassword) {
         httpsConn.setProperty('keyPass', params.sslKeyManagerPassword)
-      if(params.sslKeyStorePath) {
-        if(params.sslKeyStorePath.startsWith('classpath:')) {
+      }
+      if (params.sslKeyStorePath) {
+        if (params.sslKeyStorePath.startsWith('classpath:')) {
           String resString = params.sslKeyStorePath - 'classpath:'
           File keystoreFile = new File(tempDir, 'keystore')
           keystoreFile.parentFile.mkdirs()
-          if(keystoreFile.exists())
+          if (keystoreFile.exists()) {
             keystoreFile.delete()
+          }
           def stm = getClass().getResourceAsStream(resString)
-          if(stm == null)
+          if (stm == null) {
             throw new Exception("Could not resource referenced in sslKeyStorePath: '${resString}'")
+          }
           stm.withStream {
             keystoreFile.withOutputStream { outs ->
               outs << stm
             }
           }
           httpsConn.setProperty('keystoreFile', keystoreFile.absolutePath)
-        }
-        else
+        } else {
           httpsConn.setProperty('keystoreFile', params.sslKeyStorePath)
+        }
       }
-      if(params.sslKeyStorePassword)
+      if (params.sslKeyStorePassword) {
         httpsConn.setProperty('keystorePass', params.sslKeyStorePassword)
-      if(params.sslTrustStorePath) {
-        if(params.sslTrustStorePath.startsWith('classpath:')) {
+      }
+      if (params.sslTrustStorePath) {
+        if (params.sslTrustStorePath.startsWith('classpath:')) {
           String resString = params.sslTrustStorePath - 'classpath:'
           File truststoreFile = new File(tempDir, 'truststore')
           truststoreFile.parentFile.mkdirs()
-          if(truststoreFile.exists())
+          if (truststoreFile.exists()) {
             truststoreFile.delete()
+          }
           def stm = getClass().getResourceAsStream(resString)
-          if(stm == null)
+          if (stm == null) {
             throw new Exception("Could not resource referenced in sslTrustStorePath: '${resString}'")
+          }
           stm.withStream {
             truststoreFile.withOutputStream { outs ->
               outs << stm
             }
           }
           httpsConn.setProperty('truststoreFile', truststoreFile.absolutePath)
-        }
-        else
+        } else {
           httpsConn.setProperty('truststoreFile', params.sslTrustStorePath)
+        }
       }
-      if(params.sslTrustStorePassword)
+      if (params.sslTrustStorePassword) {
         httpsConn.setProperty('truststorePass', params.sslTrustStorePassword)
+      }
 
-      if(params.httpsIdleTimeout)
+      if (params.httpsIdleTimeout) {
         httpsConn.setProperty('keepAliveTimeout', params.httpsIdleTimeout)
+      }
 
       httpsConn.setProperty('maxPostSize', '0')  // unlimited
 
-      if(newHttpsConnector) {
+      if (newHttpsConnector) {
         service.addConnector(httpsConn)
         connectors = service.findConnectors()
       }
     }
 
-    if(httpConn && httpsConn)
+    if (httpConn && httpsConn) {
       httpConn.redirectPort = httpsConn.port
+    }
 
-    if(httpConn)
+    if (httpConn) {
       tomcat.setConnector(httpConn)
-    else if(httpsConn)
+    } else if (httpsConn) {
       tomcat.setConnector(httpsConn)
-    else if(connectors.length != 0)
+    } else if (connectors.length != 0) {
       tomcat.setConnector(connectors[0])
+    }
 
-    if(params.singleSignOn && !tomcat.host.pipeline.valves.find { it instanceof SingleSignOn })
+    if (params.singleSignOn && !tomcat.host.pipeline.valves.find { it instanceof SingleSignOn }) {
       tomcat.host.addValve(new SingleSignOn())
+    }
 
-    for(Map webapp in params.webApps) {
+    for (Map webapp in params.webApps) {
       StandardContext context = createContext(webapp, tomcat, configureContext)
       tomcat.host.addChild(context)
     }
@@ -255,14 +273,17 @@ class TomcatServerConfigurer {
       def realm = new MemoryRealm()
       realm.setPathname(realmConfigFile)
       context.setRealm(realm)
-    } else
+    } else {
       context.addLifecycleListener(new FixContextListener())
+    }
 
     context.configFile = tomcat.getWebappConfigFile(webapp.resourceBase, webapp.contextPath)
-    if (!context.configFile && webapp.contextConfigFile)
+    if (!context.configFile && webapp.contextConfigFile) {
       context.configFile = new File(webapp.contextConfigFile).toURI().toURL()
-    if (context.configFile)
+    }
+    if (context.configFile) {
       log.info 'Configuring {} with {}', webapp.contextPath, context.configFile
+    }
 
     context.addLifecycleListener(configurer.createContextConfig(classpathUrls))
 
@@ -271,10 +292,11 @@ class TomcatServerConfigurer {
       configureContext(webapp, context)
     }
 
-    if (!context.findChild('default'))
+    if (!context.findChild('default')) {
       context.addLifecycleListener(new DefaultWebXmlListener())
+    }
 
-    if (log.isDebugEnabled())
+    if (log.isDebugEnabled()) {
       context.addLifecycleListener(new LifecycleListener() {
         @Override
         public void lifecycleEvent(LifecycleEvent event) {
@@ -282,11 +304,13 @@ class TomcatServerConfigurer {
             def pipeline = context.getPipeline()
             log.debug 'START: context={}, pipeline: {} #{}', context.path, pipeline, System.identityHashCode(pipeline)
             log.debug '  valves:'
-            for (def v in pipeline.getValves())
+            for (def v in pipeline.getValves()) {
               log.debug '    {} #{}', v, System.identityHashCode(v)
+            }
           }
         }
       })
+    }
     context
   }
 

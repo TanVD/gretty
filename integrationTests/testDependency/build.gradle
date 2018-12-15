@@ -4,10 +4,11 @@ apply plugin: 'org.gretty.internal.integrationTests.IntegrationTestPlugin'
 task integrationTest(type: Test) {
   outputs.upToDateWhen { false }
   include '**/*IT.*', '**/*Spec.*', '**/*Test.*'
-  if(project.gradle.gradleVersion.startsWith('2.') || project.gradle.gradleVersion.startsWith('3.'))
+  if (project.gradle.gradleVersion.startsWith('2.') || project.gradle.gradleVersion.startsWith('3.')) {
     testClassesDir = project.sourceSets.integrationTest.output.classesDir
-  else
+  } else {
     testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+  }
   classpath = project.sourceSets.integrationTest.runtimeClasspath
   // Thus we explain to gretty that contextPath under test is "helloGretty", not "testDependency".
   // But when there's only one webapp in the farm, then even this is not needed -
@@ -27,7 +28,7 @@ afterEvaluate {
   // this is needed because integrationTest task does not belong to webapps listed in farms
   project.tasks.farmIntegrationTest.dependsOn project.tasks.integrationTest
   // this is needed only if WAR-file is generated in the same project tree
-	project.tasks.farmBeforeIntegrationTest.dependsOn ':helloGretty:publishToPrivateRepository'
+  project.tasks.farmBeforeIntegrationTest.dependsOn ':helloGretty:publishToPrivateRepository'
 }
 
 tasks.testAll.dependsOn { tasks.farmIntegrationTest }

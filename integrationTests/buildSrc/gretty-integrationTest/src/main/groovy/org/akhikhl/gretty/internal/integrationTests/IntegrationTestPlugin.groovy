@@ -46,16 +46,18 @@ class IntegrationTestPlugin extends BasePlugin {
     project.ext.defineIntegrationTest = {
 
       def integrationTestTask_ = project.tasks.findByName('integrationTest')
-      if(integrationTestTask_)
+      if (integrationTestTask_) {
         return
+      }
 
       integrationTestTask_ = project.task('integrationTest', type: Test) {
         outputs.upToDateWhen { false }
         include '**/*IT.*', '**/*Spec.*', '**/*Test.*'
-        if(project.gradle.gradleVersion.startsWith('2.') || project.gradle.gradleVersion.startsWith('3.'))
+        if (project.gradle.gradleVersion.startsWith('2.') || project.gradle.gradleVersion.startsWith('3.')) {
           testClassesDir = project.sourceSets.integrationTest.output.classesDir
-        else
+        } else {
           testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+        }
         classpath = project.sourceSets.integrationTest.runtimeClasspath
       }
 
@@ -66,13 +68,15 @@ class IntegrationTestPlugin extends BasePlugin {
 
       def integrationTestAllContainersTask = project.tasks.findByName('integrationTestAllContainers')
 
-      if (integrationTestAllContainersTask)
+      if (integrationTestAllContainersTask) {
         return integrationTestAllContainersTask
+      }
 
       integrationTestAllContainersTask = project.task('integrationTestAllContainers')
 
-      if (!integrationTestContainers)
-        integrationTestContainers = ServletContainerConfig.getConfigNames().collect() // returns immutable and we want to filter later
+      if (!integrationTestContainers) {
+        integrationTestContainers = ServletContainerConfig.getConfigNames().collect()
+      } // returns immutable and we want to filter later
 
       if (JavaVersion.current().isJava9Compatible()) {
         // excluding jetty7 and jetty8 under JDK9, can no longer compile JSPs to default 1.5 target,
@@ -95,10 +99,11 @@ class IntegrationTestPlugin extends BasePlugin {
         project.task('integrationTest_' + container, type: Test) { thisTask ->
           outputs.upToDateWhen { false }
           include '**/*IT.*', '**/*Spec.*', '**/*Test.*'
-          if (project.gradle.gradleVersion.startsWith('2.') || project.gradle.gradleVersion.startsWith('3.'))
+          if (project.gradle.gradleVersion.startsWith('2.') || project.gradle.gradleVersion.startsWith('3.')) {
             testClassesDir = project.sourceSets.integrationTest.output.classesDir
-          else
+          } else {
             testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+          }
           classpath = project.sourceSets.integrationTest.runtimeClasspath
         }
 
@@ -114,7 +119,7 @@ class IntegrationTestPlugin extends BasePlugin {
         }
       }
 
-      for(int i = 1; i < integrationTestContainers.size(); i++) {
+      for (int i = 1; i < integrationTestContainers.size(); i++) {
         String thisContainer = integrationTestContainers[i]
         String prevContainer = integrationTestContainers[i - 1]
         project.tasks['beforeIntegrationTest_' + thisContainer].mustRunAfter project.tasks['afterIntegrationTest_' + prevContainer]
@@ -127,17 +132,19 @@ class IntegrationTestPlugin extends BasePlugin {
   @Override
   protected void configureRootProjectProperties(Project project) {
     super.configureRootProjectProperties(project)
-    if(!project.hasProperty('geckoDriverArchiveFileName'))
+    if (!project.hasProperty('geckoDriverArchiveFileName')) {
       project.ext.geckoDriverArchiveFileName = "geckodriver-v${project.geckoDriverVersion}-${project.geckoDriverPlatform}.tar.gz"
-    if(!project.hasProperty('geckoDriverDownloadUrl'))
+    }
+    if (!project.hasProperty('geckoDriverDownloadUrl')) {
       project.ext.geckoDriverDownloadUrl = "https://github.com/mozilla/geckodriver/releases/download/v${project.geckoDriverVersion}/${project.geckoDriverArchiveFileName}"
+    }
   }
 
   @Override
   protected void configureRootProjectTasksAfterEvaluate(Project project) {
     super.configureRootProjectTasksAfterEvaluate(project)
 
-    if(!project.tasks.findByName('downloadGeckoDriver'))
+    if (!project.tasks.findByName('downloadGeckoDriver')) {
       project.task('downloadGeckoDriver') {
         ext.outputDir = project.buildDir
         ext.outputFile = new File(ext.outputDir, project.geckoDriverArchiveFileName)
@@ -152,8 +159,9 @@ class IntegrationTestPlugin extends BasePlugin {
           }
         }
       }
+    }
 
-    if(!project.tasks.findByName('unpackGeckoDriver'))
+    if (!project.tasks.findByName('unpackGeckoDriver')) {
       project.task('unpackGeckoDriver', type: Copy) {
         ext.outputDir = project.buildDir
         ext.outputFile = new File(ext.outputDir, 'geckodriver')
@@ -161,6 +169,7 @@ class IntegrationTestPlugin extends BasePlugin {
         from project.tarTree(project.resources.gzip(project.tasks.downloadGeckoDriver.ext.outputFile))
         into ext.outputDir
       }
+    }
   }
 
   @Override
@@ -200,8 +209,9 @@ class IntegrationTestPlugin extends BasePlugin {
     }
 
     project.tasks.withType(Test) { task ->
-      if(task.name != 'test')
+      if (task.name != 'test') {
         task.mustRunAfter project.tasks.test
+      }
       dependsOn project.rootProject.tasks.unpackGeckoDriver
       doFirst {
         systemProperty 'webdriver.gecko.driver', project.rootProject.tasks.unpackGeckoDriver.ext.outputFile.absolutePath
@@ -226,7 +236,8 @@ class IntegrationTestPlugin extends BasePlugin {
       sslKeyManagerPassword sslKeyManagerPassword_
     }
 
-    if(project.rootProject != project)
+    if (project.rootProject != project) {
       project.rootProject.tasks.testAll.dependsOn project.tasks.testAll
+    }
   }
 }

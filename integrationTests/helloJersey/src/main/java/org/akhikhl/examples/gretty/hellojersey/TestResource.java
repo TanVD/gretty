@@ -14,9 +14,9 @@ import javax.ws.rs.Produces;
 
 @Path("testresource")
 public class TestResource {
-  @GET
-  @Produces("text/plain")
-  public String hello() {
-    return "Hello World!";
-  }
+    @GET
+    @Produces("text/plain")
+    public String hello() {
+        return "Hello World!";
+    }
 }

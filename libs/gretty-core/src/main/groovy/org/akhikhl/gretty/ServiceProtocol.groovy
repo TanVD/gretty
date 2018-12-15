@@ -31,10 +31,11 @@ final class ServiceProtocol {
     Socket acceptSocket = serverSocket.accept()
     try {
       BufferedReader reader = new BufferedReader(new InputStreamReader(acceptSocket.getInputStream()))
-      while(true) {
+      while (true) {
         String line = reader.readLine()
-        if(line == '<<EOF>>')
+        if (line == '<<EOF>>') {
           break
+        }
         data << line
       }
     } finally {

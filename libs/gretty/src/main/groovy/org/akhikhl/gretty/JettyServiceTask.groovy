@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 abstract class JettyServiceTask extends AppServiceTask {
 
   protected static final Logger log = LoggerFactory.getLogger(JettyBeforeIntegrationTestTask)
-	
+
   JettyServiceTask() {
     doFirst {
       log.warn 'JettyServiceTask is deprecated and will be removed in Gretty 2.0. Please use AppServiceTask instead.'

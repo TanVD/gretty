@@ -19,20 +19,21 @@ class WebAppSpec extends GebReportingSpec {
   }
 
   def 'should get expected static page'() {
-  when:
+    when:
     go baseURI
-  then:
+    then:
     $('h1').text() == 'Hello, world!'
     $('p', 0).text() == /This is static HTML page./
   }
 
   def 'should get response from MyWebService'() {
-    if(!System.getProperty('gretty.farm'))
+    if (!System.getProperty('gretty.farm')) {
       return
-  when:
+    }
+    when:
     go baseURI
     $('#sendRequest').click()
-  then:
+    then:
     $('#result').text() == 'Got from server: ' + new Date().format('EEE, d MMM yyyy')
   }
 }

@@ -13,7 +13,7 @@ package org.akhikhl.gretty
  * @author akhikhl
  */
 interface WebAppClassPathResolver {
-	
+
   Collection<URL> resolveWebAppClassPath(WebAppConfig wconfig)
 }
 

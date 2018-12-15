@@ -9,14 +9,14 @@
 package org.akhikhl.gretty
 
 import groovyx.net.http.HTTPBuilder
-import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
-import org.apache.http.client.HttpClient
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.ssl.SSLSocketFactory
 import org.apache.http.conn.ssl.TrustStrategy
 import spock.lang.Shared
 import spock.lang.Specification
+
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
 
 /**
  *
@@ -24,14 +24,22 @@ import spock.lang.Specification
  */
 class GrettyAjaxSpec extends Specification {
 
-  @Shared String host
-  @Shared String contextPath
-  @Shared String httpPort
-  @Shared String httpBaseURI
-  @Shared String httpsPort
-  @Shared String httpsBaseURI
-  @Shared String preferredProtocol
-  @Shared String preferredBaseURI
+  @Shared
+  String host
+  @Shared
+  String contextPath
+  @Shared
+  String httpPort
+  @Shared
+  String httpBaseURI
+  @Shared
+  String httpsPort
+  @Shared
+  String httpsBaseURI
+  @Shared
+  String preferredProtocol
+  @Shared
+  String preferredBaseURI
 
   void setupSpec() {
     host = System.getProperty('gretty.host')
@@ -53,18 +61,20 @@ class GrettyAjaxSpec extends Specification {
   }
 
   HTTPBuilder getHttp() {
-    if(_http == null) {
-      if(httpBaseURI == null)
+    if (_http == null) {
+      if (httpBaseURI == null) {
         throw new Exception('HTTP connection is not supported by server')
+      }
       _http = new HTTPBuilder(httpBaseURI)
     }
     _http
   }
 
   HTTPBuilder getHttps() {
-    if(_https == null) {
-      if(httpsBaseURI == null)
+    if (_https == null) {
+      if (httpsBaseURI == null) {
         throw new Exception('HTTPS connection is not supported by server')
+      }
       _https = new HTTPBuilder(httpsBaseURI)
       TrustStrategy ts = new TrustStrategy() {
         @Override

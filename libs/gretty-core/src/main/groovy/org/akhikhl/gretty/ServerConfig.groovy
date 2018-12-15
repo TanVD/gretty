@@ -135,42 +135,48 @@ class ServerConfig {
   }
 
   void jvmArg(Object a) {
-    if(a) {
-      if(jvmArgs == null)
+    if (a) {
+      if (jvmArgs == null) {
         jvmArgs = []
+      }
       jvmArgs.add(a)
     }
   }
 
   void jvmArgs(Object... args) {
-    if(args) {
-      if(jvmArgs == null)
+    if (args) {
+      if (jvmArgs == null) {
         jvmArgs = []
+      }
       jvmArgs.addAll(args)
     }
   }
 
   void onScan(Closure newValue) {
-    if(onScan == null)
+    if (onScan == null) {
       onScan = []
+    }
     onScan.add newValue
   }
 
   void onScanFilesChanged(Closure newValue) {
-    if(onScanFilesChanged == null)
+    if (onScanFilesChanged == null) {
       onScanFilesChanged = []
+    }
     onScanFilesChanged.add newValue
   }
 
   void onStart(Closure newValue) {
-    if(onStart == null)
+    if (onStart == null) {
       onStart = []
+    }
     onStart.add newValue
   }
 
   void onStop(Closure newValue) {
-    if(onStop == null)
+    if (onStop == null) {
       onStop = []
+    }
     onStop.add newValue
   }
 
@@ -187,15 +193,17 @@ class ServerConfig {
   }
 
   void systemProperty(String name, Object value) {
-    if(systemProperties == null)
+    if (systemProperties == null) {
       systemProperties = [:]
+    }
     systemProperties[name] = value
   }
 
   void systemProperties(Map<String, Object> m) {
-    if(m) {
-      if(systemProperties == null)
+    if (m) {
+      if (systemProperties == null) {
         systemProperties = [:]
+      }
       systemProperties << m
     }
   }

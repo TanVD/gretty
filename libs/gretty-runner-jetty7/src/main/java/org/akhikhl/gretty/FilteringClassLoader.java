@@ -24,68 +24,71 @@ import java.util.List;
  */
 public class FilteringClassLoader extends WebAppClassLoader {
 
-  private final List<String> serverClasses = new ArrayList<String>();
+    private final List<String> serverClasses = new ArrayList<String>();
 
-  private final List<String> serverResources = new ArrayList<String>();
+    private final List<String> serverResources = new ArrayList<String>();
 
-  private ClassLoader bootClassLoader;
+    private ClassLoader bootClassLoader;
 
-  public FilteringClassLoader(Context context) throws IOException {
-    super(context);
-    findBootClassLoader();
-  }
-
-  public FilteringClassLoader(ClassLoader parent, Context context) throws IOException {
-    super(parent, context);
-    findBootClassLoader();
-  }
-
-  protected void findBootClassLoader() {
-    bootClassLoader = getParent();
-    if (bootClassLoader != null) {
-      while(bootClassLoader.getParent() != null) {
-        bootClassLoader = bootClassLoader.getParent();
-      }
+    public FilteringClassLoader(Context context) throws IOException {
+        super(context);
+        findBootClassLoader();
     }
-  }
 
-  public void addServerClass(String serverClass) {
-    serverClasses.add(serverClass);
-    serverResources.add(serverClass.replace('.', '/'));
-    serverResources.add("META-INF/services/" + serverClass);
-  }
+    public FilteringClassLoader(ClassLoader parent, Context context) throws IOException {
+        super(parent, context);
+        findBootClassLoader();
+    }
 
-  @Override
-  protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-    for(String serverClass : serverClasses)
-      if(name.startsWith(serverClass)) {
-        Class<?> c = findLoadedClass(name);
-        if(c == null)
-          c = findClass(name);
-        if(c != null) {
-          if(resolve)
-            resolveClass(c);
-          return c;
+    protected void findBootClassLoader() {
+        bootClassLoader = getParent();
+        if (bootClassLoader != null) {
+            while (bootClassLoader.getParent() != null) {
+                bootClassLoader = bootClassLoader.getParent();
+            }
         }
-        throw new ClassNotFoundException(name);
-      }
-    return super.loadClass(name, resolve);
-  }
-
-  @Override
-  public Enumeration<URL> getResources(String name) throws IOException {
-    for(String serverResource : serverResources) {
-      if(name.startsWith(serverResource)) {
-        final List<URL> resources = new ArrayList<>();
-        resources.addAll(Collections.list(getBootstrapResources(name)));
-        resources.addAll(Collections.list(findResources(name)));
-        return Collections.enumeration(resources);
-      }
     }
-    return super.getResources(name);
-  }
 
-  private Enumeration<URL> getBootstrapResources(String name) throws IOException {
-    return bootClassLoader.getResources(name);
-  }
+    public void addServerClass(String serverClass) {
+        serverClasses.add(serverClass);
+        serverResources.add(serverClass.replace('.', '/'));
+        serverResources.add("META-INF/services/" + serverClass);
+    }
+
+    @Override
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        for (String serverClass : serverClasses) {
+            if (name.startsWith(serverClass)) {
+                Class<?> c = findLoadedClass(name);
+                if (c == null) {
+                    c = findClass(name);
+                }
+                if (c != null) {
+                    if (resolve) {
+                        resolveClass(c);
+                    }
+                    return c;
+                }
+                throw new ClassNotFoundException(name);
+            }
+        }
+        return super.loadClass(name, resolve);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        for (String serverResource : serverResources) {
+            if (name.startsWith(serverResource)) {
+                final List<URL> resources = new ArrayList<>();
+                resources.addAll(Collections.list(getBootstrapResources(name)));
+                resources.addAll(Collections.list(findResources(name)));
+                return Collections.enumeration(resources);
+            }
+        }
+        return super.getResources(name);
+    }
+
+    private Enumeration<URL> getBootstrapResources(String name) throws IOException {
+        return bootClassLoader.getResources(name);
+    }
 }

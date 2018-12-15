@@ -7,7 +7,7 @@ class ProjectProperties {
   private static PropertiesConfiguration config
 
   static synchronized String getString(String key) {
-    if(config == null) {
+    if (config == null) {
       config = new PropertiesConfiguration()
       URLConnection resConn = ProjectProperties.getResource('project.properties').openConnection()
       // this fixes exceptions when reloading classes in running application

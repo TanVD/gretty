@@ -21,6 +21,6 @@ interface Launcher {
   void dispose()
 
   void launch()
-  
+
   Thread launchThread()
 }
