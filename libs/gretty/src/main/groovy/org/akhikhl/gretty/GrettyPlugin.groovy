@@ -97,7 +97,6 @@ class GrettyPlugin implements Plugin<Project> {
       grettyStarter "org.gretty:gretty-starter:$grettyVersion"
       grettySpringLoaded "org.springframework:springloaded:$springLoadedVersion"
       grettyHotswapAgent "org.hotswapagent:hotswap-agent:$hotswapAgentVersion"
-      grettyHotswapAgent "org.hotswapagent:hotswap-agent-kotlin-plugin:$hotswapAgentVersion"
     }
 
     ServletContainerConfig.getConfig(project.gretty.servletContainer).with { config ->
