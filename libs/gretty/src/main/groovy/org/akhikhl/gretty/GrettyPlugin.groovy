@@ -86,7 +86,7 @@ class GrettyPlugin implements Plugin<Project> {
 
         project.dependencies {
             grettyStarter "org.gretty:gretty-starter:$grettyVersion"
-            grettyHotswapAgent "org.hotswapagent:hotswap-agent:1.3.0-SNAPSHOT"
+            grettyHotswapAgent "org.hotswapagent:hotswap-agent:1.3.0"
         }
 
         ServletContainerConfig.getConfig(project.gretty.servletContainer).with { config ->

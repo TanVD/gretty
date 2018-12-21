@@ -12,7 +12,6 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'org.apache.commons:commons-lang3:3.3.2'
     compile 'org.bouncycastle:bcprov-jdk15on:1.60'
-    compile "org.springframework.boot:spring-boot-devtools:$springBootVersion"
 }
 
 tasks.processResources {
@@ -30,10 +29,6 @@ tasks.processResources {
             tomcat85ServletApiVersion: project.tomcat85_servlet_api_version,
             tomcat9Version: project.tomcat9_version,
             tomcat9ServletApiVersion: project.tomcat9_servlet_api_version,
-            springBootVersion: project.springBootVersion,
-            springLoadedVersion: project.springLoadedVersion,
-            hotswapAgentVersion: project.hotswapAgentVersion,
-            springVersion: project.springVersion,
             logbackVersion: project.logback_version,
             asmVersion: project.asm_version
     ]

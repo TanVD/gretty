@@ -120,15 +120,4 @@ class FarmStartTask extends StartBaseTask {
         webAppRefs[w] = options
     }
 
-    // use serverConfigFile instead
-    @Deprecated
-    def getJettyXmlFile() {
-        serverConfig.getJettyXmlFile()
-    }
-
-    // use serverConfigFile instead
-    @Deprecated
-    void setJettyXmlFile(newValue) {
-        serverConfig.setJettyXmlFile(newValue)
-    }
 }
